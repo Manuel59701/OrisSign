@@ -96,7 +96,7 @@ CREATE TABLE event_bookings (
     total_amount DECIMAL(10,2) NOT NULL,
     payment_status ENUM('pending', 'paid', 'refunded') DEFAULT 'pending',
     payment_method ENUM('online', 'cash', 'card', 'transfer') DEFAULT 'online',
-    booking_status ENUM('reserved', 'confirmed', 'active', 'completed', 'cancelled') DEFAULT 'reserved',
+    booking_status ENUM('reserved', 'pending', 'confirmed', 'active', 'completed', 'cancelled') DEFAULT 'pending',
     special_requests TEXT,
     managed_by INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

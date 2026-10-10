@@ -4,6 +4,7 @@ import { formatCurrency, formatDate } from '../../utils/helpers';
 import { downloadReceipt } from '../../utils/receipt';
 import { useToast } from '../../context/ToastContext';
 import { Calendar, Presentation, Search, Download } from '../../components/Icons';
+import EventCalendarView from './EventCalendarView';
 import './Admin.css';
 
 export default function EventManager() {
@@ -16,7 +17,23 @@ export default function EventManager() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [showAddSpaceModal, setShowAddSpaceModal] = useState(false);
+  const [showAddEventModal, setShowAddEventModal] = useState(false);
+  const [noteEvent, setNoteEvent] = useState(null);
+  const [eventSubmitting, setEventSubmitting] = useState(false);
   const { showToast } = useToast();
+
+  const [newEventForm, setNewEventForm] = useState({
+    event_name: '',
+    client_name: '',
+    client_email: '',
+    client_phone: '',
+    event_date: new Date().toISOString().split('T')[0],
+    duration_days: 1,
+    expected_guests: 100,
+    event_space_id: '',
+    payment_method: 'pos',
+    special_requests: '',
+  });
 
   const [newSpaceForm, setNewSpaceForm] = useState({
     name: '',
@@ -49,11 +66,70 @@ export default function EventManager() {
 
   const handleUpdateStatus = async (bookingId, newStatus) => {
     try {
-      await api.updateEventBooking(bookingId, { booking_status: newStatus });
+      const paidStatuses = ['confirmed', 'active', 'completed'];
+      const paymentStatus =
+        newStatus === 'cancelled' ? 'cancelled'
+        : paidStatuses.includes(newStatus) ? 'paid'
+        : 'pending';
+      const payload = {
+        booking_status: newStatus,
+        payment_status: paymentStatus,
+      };
+      await api.updateEventBooking(bookingId, payload);
       showToast(`Event status updated to ${newStatus}`, 'success');
       loadData();
     } catch (err) {
       showToast(err.error || 'Failed to update event status', 'error');
+    }
+  };
+
+  const computeEndDate = (start, days) => {
+    if (!start || !days || parseInt(days) <= 1) return start;
+    const d = new Date(start + 'T00:00:00');
+    d.setDate(d.getDate() + (parseInt(days) - 1));
+    return d.toISOString().split('T')[0];
+  };
+
+  const handleCreateEvent = async (e) => {
+    e.preventDefault();
+    setEventSubmitting(true);
+    try {
+      const space = spaces.find(s => s.id === parseInt(newEventForm.event_space_id)) || spaces[0];
+      const duration = Math.max(1, parseInt(newEventForm.duration_days) || 1);
+      await api.createEventBooking({
+        event_name: newEventForm.event_name,
+        client_name: newEventForm.client_name,
+        client_email: newEventForm.client_email,
+        client_phone: newEventForm.client_phone,
+        event_date: newEventForm.event_date,
+        event_end_date: computeEndDate(newEventForm.event_date, duration),
+        expected_guests: parseInt(newEventForm.expected_guests),
+        event_space_id: parseInt(newEventForm.event_space_id),
+        payment_method: newEventForm.payment_method,
+        special_requests: newEventForm.special_requests,
+        total_amount: space ? space.price_per_day * duration : 250000,
+        payment_status: 'pending',
+        booking_status: 'pending',
+      });
+      showToast('Event booking created successfully!', 'success');
+      setShowAddEventModal(false);
+      setNewEventForm({
+        event_name: '',
+        client_name: '',
+        client_email: '',
+        client_phone: '',
+        event_date: new Date().toISOString().split('T')[0],
+        duration_days: 1,
+        expected_guests: 100,
+        event_space_id: '',
+        payment_method: 'pos',
+        special_requests: '',
+      });
+      loadData();
+    } catch (err) {
+      showToast(err.error || 'Failed to create event booking', 'error');
+    } finally {
+      setEventSubmitting(false);
     }
   };
 
@@ -118,9 +194,27 @@ export default function EventManager() {
           </p>
         </div>
         <div>
-          {activeTab === 'spaces' && (
+          {activeTab === 'bookings' && (
             <button
               className="btn-admin btn-admin-accent"
+              onClick={() => setShowAddEventModal(true)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Calendar width="15" height="15" /> Book an Event
+            </button>
+          )}
+          {activeTab === 'calendar' && (
+            <button
+              className="btn-admin btn-admin-accent"
+              onClick={() => setShowAddEventModal(true)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Calendar width="15" height="15" /> Book an Event
+            </button>
+          )}
+          {activeTab === 'spaces' && (
+            <button
+              className="btn-admin btn-admin-primary"
               onClick={() => setShowAddSpaceModal(true)}
             >
               + Add Event Venue Space
@@ -138,6 +232,12 @@ export default function EventManager() {
           <span className="tab-badge">{eventBookings.length}</span>
         </button>
         <button
+          className={`admin-tab-btn ${activeTab === 'calendar' ? 'active' : ''}`}
+          onClick={() => setActiveTab('calendar')}
+        >
+          <span><Calendar width="16" height="16" /> Event Calendar</span>
+        </button>
+        <button
           className={`admin-tab-btn ${activeTab === 'spaces' ? 'active' : ''}`}
           onClick={() => setActiveTab('spaces')}
         >
@@ -145,6 +245,18 @@ export default function EventManager() {
           <span className="tab-badge">{spaces.length}</span>
         </button>
       </div>
+
+      {/* TAB: EVENT CALENDAR */}
+      {activeTab === 'calendar' && (
+        <EventCalendarView
+          events={eventBookings}
+          onSetStatus={(id, status) => handleUpdateStatus(id, status)}
+          onAddEvent={(date) => {
+            setNewEventForm(prev => ({ ...prev, event_date: date }));
+            setShowAddEventModal(true);
+          }}
+        />
+      )}
 
       {/* TAB 1: EVENT RESERVATIONS */}
       {activeTab === 'bookings' && (
@@ -168,6 +280,7 @@ export default function EventManager() {
               <option value="all">All Statuses</option>
               <option value="confirmed">Confirmed</option>
               <option value="active">In Progress / Active</option>
+              <option value="pending">Pending</option>
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
@@ -202,21 +315,25 @@ export default function EventManager() {
                         <span className="receipt-code-pill">{evt.receipt_id}</span>
                       </td>
                       <td>
-                        <div style={{ fontWeight: 600, color: '#111827' }}>{evt.event_name}</div>
-                        {evt.special_requests && (
-                          <div style={{ fontSize: '0.74rem', color: '#9ca3af', maxWidth: '200px' }}>
-                            Note: {evt.special_requests}
-                          </div>
+                        <div
+                          className="event-name-clickable"
+                          onClick={() => setNoteEvent(evt)}
+                          title="Click to view notes"
+                          style={{ maxWidth: '200px', minWidth: 0 }}
+                        >
+                          <span className="event-name-text">{evt.event_name}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ fontWeight: 500, maxWidth: '180px' }}>{evt.client_name}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#6b7280', maxWidth: '180px' }}>{evt.client_phone}</div>
+                        {evt.client_email && (
+                          <div style={{ fontSize: '0.72rem', color: '#9ca3af', maxWidth: '180px', overflowWrap: 'anywhere' }}>{evt.client_email}</div>
                         )}
                       </td>
                       <td>
-                        <div style={{ fontWeight: 500 }}>{evt.client_name}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{evt.client_phone}</div>
-                        {evt.client_email && (
-                          <div style={{ fontSize: '0.72rem', color: '#9ca3af' }}>{evt.client_email}</div>
-                        )}
+                        <div style={{ maxWidth: '150px', overflowWrap: 'break-word' }}>{evt.space_name}</div>
                       </td>
-                      <td>{evt.space_name}</td>
                       <td style={{ fontSize: '0.82rem' }}>
                         <div>{formatDate(evt.event_date)}</div>
                         {evt.event_end_date && evt.event_end_date !== evt.event_date && (
@@ -228,7 +345,9 @@ export default function EventManager() {
                       <td>{evt.expected_guests} guests</td>
                       <td>
                         <div style={{ fontWeight: 600 }}>{formatCurrency(evt.total_amount)}</div>
-                        <span className="badge badge-paid">{evt.payment_status || 'paid'}</span>
+                        <span className={`badge badge-${evt.payment_status || 'paid'}`}>
+                          {evt.payment_status || 'paid'}
+                        </span>
                       </td>
                       <td>
                         <span className={`badge badge-${(evt.booking_status || 'confirmed').replace('_', '-')}`}>
@@ -249,6 +368,7 @@ export default function EventManager() {
                           >
                             <option value="confirmed">Confirmed</option>
                             <option value="active">Active Now</option>
+                            <option value="pending">Pending</option>
                             <option value="completed">Completed</option>
                             <option value="cancelled">Cancelled</option>
                           </select>
@@ -373,10 +493,167 @@ export default function EventManager() {
         </div>
       )}
 
+      {/* Modal: Book an Event */}
+      {showAddEventModal && (
+        <div className="modal-overlay" onClick={() => setShowAddEventModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">Book an Event</h3>
+              <button className="modal-close-btn" onClick={() => setShowAddEventModal(false)}>
+                &times;
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateEvent}>
+              <div className="modal-body">
+                <div className="form-field">
+                  <label>Event / Celebration Name *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Adaeze & Emeka Wedding Gala"
+                    value={newEventForm.event_name}
+                    onChange={(e) => setNewEventForm({ ...newEventForm, event_name: e.target.value })}
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label>Venue Space *</label>
+                  <select
+                    required
+                    value={newEventForm.event_space_id}
+                    onChange={(e) => setNewEventForm({ ...newEventForm, event_space_id: e.target.value })}
+                  >
+                    <option value="">Select a venue space...</option>
+                    {spaces.map((space) => (
+                      <option key={space.id} value={space.id}>
+                        {space.name} — {formatCurrency(space.price_per_day)}/day ({space.capacity} pax)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-grid-2">
+                  <div className="form-field">
+                    <label>Event Date *</label>
+                    <input
+                      type="date"
+                      required
+                      min={new Date().toISOString().split('T')[0]}
+                      value={newEventForm.event_date}
+                      onChange={(e) => setNewEventForm({ ...newEventForm, event_date: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="form-field">
+                    <label>Duration (Days) *</label>
+                    <input
+                      type="number"
+                      required
+                      min="1"
+                      value={newEventForm.duration_days}
+                      onChange={(e) => setNewEventForm({ ...newEventForm, duration_days: e.target.value })}
+                    />
+                    {parseInt(newEventForm.duration_days) > 1 && newEventForm.event_date && (
+                      <span className="form-hint">
+                        Runs until {computeEndDate(newEventForm.event_date, newEventForm.duration_days)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="form-grid-2">
+                  <div className="form-field">
+                    <label>Expected Guests *</label>
+                    <input
+                      type="number"
+                      required
+                      min="1"
+                      value={newEventForm.expected_guests}
+                      onChange={(e) => setNewEventForm({ ...newEventForm, expected_guests: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-grid-2">
+                  <div className="form-field">
+                    <label>Client / Host Name *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Adaeze Nwosu"
+                      value={newEventForm.client_name}
+                      onChange={(e) => setNewEventForm({ ...newEventForm, client_name: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="form-field">
+                    <label>Client Phone *</label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="+234 8xx xxx xxxx"
+                      value={newEventForm.client_phone}
+                      onChange={(e) => setNewEventForm({ ...newEventForm, client_phone: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-field">
+                  <label>Client Email</label>
+                  <input
+                    type="email"
+                    placeholder="client@example.com"
+                    value={newEventForm.client_email}
+                    onChange={(e) => setNewEventForm({ ...newEventForm, client_email: e.target.value })}
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label>Payment Method *</label>
+                  <select
+                    value={newEventForm.payment_method}
+                    onChange={(e) => setNewEventForm({ ...newEventForm, payment_method: e.target.value })}
+                  >
+                    <option value="pos">POS Terminal / Debit Card</option>
+                    <option value="transfer">Direct Bank Transfer</option>
+                    <option value="card">Card Online</option>
+                    <option value="cash">Cash Payment</option>
+                  </select>
+                </div>
+
+                <div className="form-field">
+                  <label>Special Requests / Notes</label>
+                  <textarea
+                    rows="2"
+                    placeholder="e.g. Stage setup, catering, floral arrangements..."
+                    value={newEventForm.special_requests}
+                    onChange={(e) => setNewEventForm({ ...newEventForm, special_requests: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn-admin btn-admin-secondary"
+                  onClick={() => setShowAddEventModal(false)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-admin btn-admin-accent" disabled={eventSubmitting}>
+                  {eventSubmitting ? 'Booking...' : 'Confirm Event Booking'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Modal: Add New Venue Space */}
       {showAddSpaceModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="modal-overlay" onClick={() => setShowAddSpaceModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3 className="modal-title">Add New Event Venue Space</h3>
               <button className="modal-close-btn" onClick={() => setShowAddSpaceModal(false)}>
@@ -455,6 +732,46 @@ export default function EventManager() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Event Notes */}
+      {noteEvent && (
+        <div className="modal-overlay" onClick={() => setNoteEvent(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">{noteEvent.event_name}</h3>
+              <button className="modal-close-btn" onClick={() => setNoteEvent(null)}>
+                &times;
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <div className="event-note-meta">
+                <span className={`badge badge-${(noteEvent.booking_status || 'confirmed').replace('_', '-')}`}>
+                  {(noteEvent.booking_status || 'confirmed').replace('_', ' ')}
+                </span>
+                <span>{noteEvent.space_name}</span>
+                <span>{noteEvent.expected_guests} guests</span>
+                <span>{formatCurrency(noteEvent.total_amount)}</span>
+              </div>
+              <div className="event-note-client">
+                {noteEvent.client_name}
+                {noteEvent.client_phone ? ` \u2014 ${noteEvent.client_phone}` : ''}
+                {noteEvent.client_email ? ` \u2014 ${noteEvent.client_email}` : ''}
+              </div>
+              <div className="event-note-label">Notes / Special Requests</div>
+              <div className="event-note-body">
+                {noteEvent.special_requests || 'No special requests were provided for this event.'}
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button type="button" className="btn-admin btn-admin-secondary" onClick={() => setNoteEvent(null)}>
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

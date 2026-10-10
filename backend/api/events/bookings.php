@@ -113,7 +113,7 @@ switch ($method) {
             $stmt->execute();
         }
 
-        $stmt = $conn->prepare("INSERT INTO event_bookings (receipt_id, client_name, client_email, client_phone, event_space_id, event_name, event_date, event_end_date, expected_guests, total_amount, payment_status, payment_method, special_requests) VALUES (:receipt_id, :client_name, :client_email, :client_phone, :space_id, :event_name, :event_date, :event_end_date, :expected_guests, :total_amount, :payment_status, :payment_method, :special_requests)");
+        $stmt = $conn->prepare("INSERT INTO event_bookings (receipt_id, client_name, client_email, client_phone, event_space_id, event_name, event_date, event_end_date, expected_guests, total_amount, payment_status, payment_method, special_requests, booking_status) VALUES (:receipt_id, :client_name, :client_email, :client_phone, :space_id, :event_name, :event_date, :event_end_date, :expected_guests, :total_amount, :payment_status, :payment_method, :special_requests, :booking_status)");
 
         $stmt->execute([
             ':receipt_id' => $receiptId,
@@ -126,9 +126,10 @@ switch ($method) {
             ':event_end_date' => $eventEndDate,
             ':expected_guests' => $data['expected_guests'],
             ':total_amount' => $totalAmount,
-            ':payment_status' => $data['payment_status'] ?? 'paid',
+            ':payment_status' => $data['payment_status'] ?? 'pending',
             ':payment_method' => $data['payment_method'] ?? 'online',
-            ':special_requests' => $data['special_requests'] ?? null
+            ':special_requests' => $data['special_requests'] ?? null,
+            ':booking_status' => $data['booking_status'] ?? 'pending'
         ]);
 
         http_response_code(201);
@@ -152,9 +153,14 @@ switch ($method) {
         $data = json_decode(file_get_contents("php://input"), true);
         $authUser = Auth::getAuthUser();
 
-        $stmt = $conn->prepare("UPDATE event_bookings SET booking_status = :status, managed_by = :managed_by WHERE id = :id");
+        $newStatus = $data['booking_status'] ?? 'pending';
+        $paidStatuses = ['confirmed', 'active', 'completed'];
+        $paymentStatus = $data['payment_status'] ?? ($newStatus === 'cancelled' ? 'cancelled' : (in_array($newStatus, $paidStatuses, true) ? 'paid' : 'pending'));
+
+        $stmt = $conn->prepare("UPDATE event_bookings SET booking_status = :status, payment_status = :payment_status, managed_by = :managed_by WHERE id = :id");
         $stmt->execute([
-            ':status' => $data['booking_status'],
+            ':status' => $newStatus,
+            ':payment_status' => $paymentStatus,
             ':managed_by' => $authUser['user_id'],
             ':id' => $id
         ]);

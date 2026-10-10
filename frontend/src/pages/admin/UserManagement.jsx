@@ -170,8 +170,8 @@ export default function UserManagement() {
 
       {/* Add Staff Modal */}
       {showAddModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3 className="modal-title">Create Staff Portal Account</h3>
               <button className="modal-close-btn" onClick={() => setShowAddModal(false)}>

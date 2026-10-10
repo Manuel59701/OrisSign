@@ -627,9 +627,9 @@ class ApiClient {
           event_end_date: body.event_end_date || body.event_date,
           expected_guests: body.expected_guests,
           total_amount: body.total_amount || (space ? space.price_per_day : 250000),
-          payment_status: 'paid',
+          payment_status: body.payment_status || 'pending',
           payment_method: body.payment_method || 'card',
-          booking_status: 'confirmed',
+          booking_status: body.booking_status || 'pending',
           special_requests: body.special_requests || '',
           created_at: new Date().toISOString()
         };

@@ -40,7 +40,7 @@ export default function EventBookingPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const payload = { ...form, event_end_date: form.event_end_date || form.event_date, total_amount: totalAmount };
+      const payload = { ...form, event_end_date: form.event_end_date || form.event_date, total_amount: totalAmount, payment_status: 'pending', booking_status: 'pending' };
       const result = await api.createEventBooking(payload);
       const booking = {
         receipt_id: result.receipt_id,

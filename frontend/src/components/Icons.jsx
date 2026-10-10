@@ -229,6 +229,10 @@ export const Key = make(<>
   <path d="m10 13 8-8M15 5h4v4" />
 </>);
 
+export const X = make(<>
+  <path d="M18 6 6 18M6 6l12 12" />
+</>);
+
 const amenityMatchers = [
   [/wifi|wi-fi|internet/, Wifi],
   [/air condition|\bac\b|climate/, Snowflake],
@@ -268,5 +272,5 @@ export default {
   Shield, Search, Clipboard, Check, CheckCircle, Download, Mail, Phone, MapPin,
   Clock, Money, Sparkles, Star, Wifi, Snowflake, Tv, Fridge, Wine, Sun, Bath,
   Sofa, Utensils, Mic, Music, Video, Presentation, Umbrella, Flame, Lightbulb,
-  Car, Sprout, Key,
+  Car, Sprout, Key, X,
 };

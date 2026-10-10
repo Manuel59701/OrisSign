@@ -239,8 +239,8 @@ export default function RoomManagement() {
 
       {/* Add / Edit Room Modal */}
       {showAddModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3 className="modal-title">
                 {editingRoom ? `Edit Room: ${editingRoom.name}` : 'Add New Room / Suite'}
