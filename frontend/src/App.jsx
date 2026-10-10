@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
+import SplashScreen from './components/SplashScreen';
 import LandingPage from './pages/public/LandingPage';
 import BookingPage from './pages/public/BookingPage';
 import EventBookingPage from './pages/public/EventBookingPage';
@@ -16,10 +18,13 @@ import ReceiptSearch from './pages/admin/ReceiptSearch';
 import './index.css';
 
 function App() {
+  const [showSplash, setShowSplash] = useState(true);
+
   return (
     <Router>
       <AuthProvider>
         <ToastProvider>
+          {showSplash && <SplashScreen onDone={() => setShowSplash(false)} />}
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
