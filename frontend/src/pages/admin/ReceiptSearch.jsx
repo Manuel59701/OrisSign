@@ -3,6 +3,7 @@ import api from '../../utils/api';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import { downloadReceipt } from '../../utils/receipt';
 import { useToast } from '../../context/ToastContext';
+import { Search, Calendar, Bed, Check, Download } from '../../components/Icons';
 import './Admin.css';
 
 export default function ReceiptSearch() {
@@ -80,7 +81,7 @@ export default function ReceiptSearch() {
         <form onSubmit={handleSearch} style={{ padding: '2rem' }}>
           <div style={{ display: 'flex', gap: '12px' }}>
             <div className="search-input-wrapper" style={{ flex: 1 }}>
-              <span className="search-icon">🔍</span>
+              <span className="search-icon"><Search width="16" height="16" /></span>
               <input
                 type="text"
                 placeholder="Enter Unique Receipt ID (e.g. ORS-982143), guest name, or phone number..."
@@ -130,7 +131,9 @@ export default function ReceiptSearch() {
                 <div className="receipt-row">
                   <span className="receipt-row-label">Booking Category</span>
                   <span className="receipt-row-value" style={{ textTransform: 'uppercase' }}>
-                    {selectedReceipt.type === 'event' ? '🎉 Event Space Venue' : '🛏️ Hotel Room Suite'}
+                    {selectedReceipt.type === 'event'
+                      ? <><Calendar width="14" height="14" /> Event Space Venue</>
+                      : <><Bed width="14" height="14" /> Hotel Room Suite</>}
                   </span>
                 </div>
                 <div className="receipt-row">
@@ -156,7 +159,7 @@ export default function ReceiptSearch() {
                 <div className="receipt-row">
                   <span className="receipt-row-label">Payment Status</span>
                   <span className="receipt-row-value" style={{ color: '#059669', fontWeight: 700 }}>
-                    ✓ CONFIRMED ({selectedReceipt.payment_status?.toUpperCase() || 'PAID'})
+                    <Check width="13" height="13" /> CONFIRMED ({selectedReceipt.payment_status?.toUpperCase() || 'PAID'})
                   </span>
                 </div>
               </div>
@@ -172,13 +175,13 @@ export default function ReceiptSearch() {
                   onClick={() => downloadReceipt(selectedReceipt, selectedReceipt.type || 'room')}
                   style={{ padding: '0.85rem 1.75rem', fontSize: '0.95rem' }}
                 >
-                  📥 Download Official PDF Receipt
+                  <Download width="15" height="15" /> Download Official PDF Receipt
                 </button>
               </div>
             </div>
           ) : (
             <div className="admin-card" style={{ padding: '3rem', textAlign: 'center', color: '#9ca3af' }}>
-              <span style={{ fontSize: '2.5rem' }}>🔍</span>
+              <span style={{ color: 'var(--color-accent-dark)' }}><Search width="40" height="40" /></span>
               <p style={{ marginTop: '1rem', fontSize: '0.95rem' }}>
                 Enter a Receipt ID above or click one of the recent receipts on the right to view details.
               </p>

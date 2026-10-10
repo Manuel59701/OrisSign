@@ -3,9 +3,11 @@ import api from '../../utils/api';
 import { formatCurrency, formatDate, getToday, getTomorrow, calculateNights } from '../../utils/helpers';
 import { downloadReceipt } from '../../utils/receipt';
 import { useToast } from '../../context/ToastContext';
+import { Bell, Clipboard, Search, Check, CheckCircle, Download } from '../../components/Icons';
 import './Admin.css';
 
 export default function FrontDesk() {
+  const PER_PAGE = 10;
   const [activeTab, setActiveTab] = useState('bookings'); // 'bookings' | 'walkin' | 'receipts'
   const [bookings, setBookings] = useState([]);
   const [rooms, setRooms] = useState([]);
@@ -13,6 +15,7 @@ export default function FrontDesk() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
   const { showToast } = useToast();
 
   // Walk-in form state
@@ -60,6 +63,11 @@ export default function FrontDesk() {
     loadData();
   }, []);
 
+  // Reset to page 1 whenever filters/search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, typeFilter]);
+
   // Handle checking in an existing reservation
   const handleCheckIn = async (bookingId, guestName) => {
     try {
@@ -68,6 +76,20 @@ export default function FrontDesk() {
       loadData();
     } catch (err) {
       showToast(err.error || 'Failed to check in guest', 'error');
+    }
+  };
+
+  // Handle checking out a guest — frees their room
+  const handleCheckOut = async (bookingId, guestName, roomName) => {
+    if (!window.confirm(`Check out ${guestName} from ${roomName || 'their room'}? The room will be marked available.`)) {
+      return;
+    }
+    try {
+      await api.checkOut(bookingId);
+      showToast(`Checked out ${guestName}. ${roomName || 'Room'} is now available.`, 'success');
+      loadData();
+    } catch (err) {
+      showToast(err.error || 'Failed to check out guest', 'error');
     }
   };
 
@@ -152,11 +174,18 @@ export default function FrontDesk() {
       b.guest_phone?.includes(q) ||
       b.room_name?.toLowerCase().includes(q);
 
-    const matchesStatus = statusFilter === 'all' || b.check_in_status === statusFilter;
+    const status = b.check_in_status || b.booking_status || 'pending';
+    const matchesStatus = statusFilter === 'all' || status === statusFilter;
     const matchesType = typeFilter === 'all' || b.booking_type === typeFilter;
 
     return matchesSearch && matchesStatus && matchesType;
   });
+
+  // Pagination (10 rows per page)
+  const totalPages = Math.max(1, Math.ceil(filteredBookings.length / PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const pageStart = (safePage - 1) * PER_PAGE;
+  const paginatedBookings = filteredBookings.slice(pageStart, pageStart + PER_PAGE);
 
   return (
     <div>
@@ -188,7 +217,7 @@ export default function FrontDesk() {
           className={`admin-tab-btn ${activeTab === 'bookings' ? 'active' : ''}`}
           onClick={() => setActiveTab('bookings')}
         >
-          <span>🛎️ All Bookings & Check-In</span>
+          <span><Bell width="16" height="16" /> All Bookings & Check-In</span>
           <span className="tab-badge">{bookings.length}</span>
         </button>
 
@@ -196,14 +225,14 @@ export default function FrontDesk() {
           className={`admin-tab-btn ${activeTab === 'walkin' ? 'active' : ''}`}
           onClick={() => setActiveTab('walkin')}
         >
-          <span>📝 Walk-In Registration</span>
+          <span><Clipboard width="16" height="16" /> Walk-In Registration</span>
         </button>
 
         <button
           className={`admin-tab-btn ${activeTab === 'receipts' ? 'active' : ''}`}
           onClick={() => setActiveTab('receipts')}
         >
-          <span>🔍 Quick Receipt Search</span>
+          <span><Search width="16" height="16" /> Quick Receipt Search</span>
         </button>
       </div>
 
@@ -212,7 +241,7 @@ export default function FrontDesk() {
         <div className="admin-card">
           <div className="filter-bar">
             <div className="search-input-wrapper">
-              <span className="search-icon">🔍</span>
+              <span className="search-icon"><Search width="16" height="16" /></span>
               <input
                 type="text"
                 placeholder="Search by Receipt ID (ORS-XXXXXX), Guest Name, Phone..."
@@ -266,7 +295,9 @@ export default function FrontDesk() {
                     </td>
                   </tr>
                 ) : filteredBookings.length > 0 ? (
-                  filteredBookings.map((b) => (
+                  paginatedBookings.map((b) => {
+                    const status = b.check_in_status || b.booking_status || 'pending';
+                    return (
                     <tr key={b.id}>
                       <td>
                         <span className="receipt-code-pill">{b.receipt_id}</span>
@@ -296,25 +327,24 @@ export default function FrontDesk() {
                           {b.booking_type || 'online'}
                         </span>
                       </td>
-                      <td>
-                        <div>
-                          <span className="badge badge-paid">{b.payment_status || 'paid'}</span>
+                      <td className="payment-cell">
+                        <div className="payment-status-row">
+                          <span className="badge badge-paid">
+                            {b.payment_status || 'paid'} [{(b.payment_method || 'card')}]
+                          </span>
                         </div>
-                        <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '2px', textTransform: 'uppercase' }}>
-                          {b.payment_method || 'card'}
-                        </div>
-                        <div style={{ fontWeight: 600, fontSize: '0.82rem', marginTop: '2px' }}>
+                        <div className="payment-amount">
                           {formatCurrency(b.total_amount)}
                         </div>
                       </td>
                       <td>
-                        <span className={`badge badge-${(b.check_in_status || 'pending').replace('_', '-')}`}>
-                          {b.check_in_status === 'checked_in' ? '✓ Checked In' : b.check_in_status || 'pending'}
+                        <span className={`badge badge-${status.replace(/_/g, '-')}`}>
+                          {status === 'checked_in' ? <><Check width="12" height="12" /> Checked In</> : status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                         </span>
                       </td>
                       <td style={{ textAlign: 'right' }}>
                         <div className="action-buttons-group" style={{ justifyContent: 'flex-end' }}>
-                          {b.check_in_status !== 'checked_in' ? (
+                          {status !== 'checked_in' && status !== 'checked_out' && (
                             <button
                               className="btn-admin btn-admin-success btn-admin-sm"
                               onClick={() => handleCheckIn(b.id, b.guest_name)}
@@ -322,23 +352,36 @@ export default function FrontDesk() {
                             >
                               Check In
                             </button>
-                          ) : (
-                            <span style={{ fontSize: '0.75rem', color: '#059669', fontWeight: 600, marginRight: '4px' }}>
-                              In-house
+                          )}
+
+                          {status === 'checked_in' && (
+                            <button
+                              className="btn-admin btn-admin-danger btn-admin-sm"
+                              onClick={() => handleCheckOut(b.id, b.guest_name, b.room_name)}
+                              title="Check out this guest and free the room"
+                            >
+                              Check Out
+                            </button>
+                          )}
+
+                          {status === 'checked_out' && (
+                            <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 600, marginRight: '4px' }}>
+                              Checked Out
                             </span>
                           )}
 
                           <button
-                            className="btn-admin btn-admin-secondary btn-admin-sm"
+                            className="btn-admin btn-admin-secondary btn-admin-sm btn-icon-only"
                             onClick={() => downloadReceipt(b, 'room')}
                             title="Download Official Receipt PDF"
                           >
-                            Receipt PDF
+                            <Download width="15" height="15" />
                           </button>
                         </div>
                       </td>
                     </tr>
-                  ))
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan="8" style={{ textAlign: 'center', padding: '3rem', color: '#9ca3af' }}>
@@ -349,6 +392,44 @@ export default function FrontDesk() {
               </tbody>
             </table>
           </div>
+
+          {filteredBookings.length > PER_PAGE && (
+            <div className="pagination-bar">
+              <span className="pagination-info">
+                Showing {pageStart + 1}–{Math.min(pageStart + PER_PAGE, filteredBookings.length)} of {filteredBookings.length}
+              </span>
+              <div className="pagination-controls">
+                <button
+                  type="button"
+                  className="pagination-btn"
+                  disabled={safePage <= 1}
+                  onClick={() => setCurrentPage(p => p - 1)}
+                >
+                  Prev
+                </button>
+                <span className="pagination-pages">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                    <button
+                      type="button"
+                      key={n}
+                      className={`pagination-page ${n === safePage ? 'active' : ''}`}
+                      onClick={() => setCurrentPage(n)}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </span>
+                <button
+                  type="button"
+                  className="pagination-btn"
+                  disabled={safePage >= totalPages}
+                  onClick={() => setCurrentPage(p => p + 1)}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -358,7 +439,7 @@ export default function FrontDesk() {
           {recentWalkinReceipt ? (
             <div className="receipt-display-card" style={{ marginBottom: '2rem' }}>
               <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-                <span style={{ fontSize: '2.5rem' }}>🎉</span>
+                <span style={{ color: 'var(--color-accent-dark)' }}><CheckCircle width="40" height="40" /></span>
                 <h3 style={{ fontFamily: 'var(--font-heading)', margin: '8px 0', fontSize: '1.4rem' }}>
                   Walk-in Check-in Successful!
                 </h3>
@@ -406,7 +487,7 @@ export default function FrontDesk() {
                   className="btn-admin btn-admin-primary"
                   onClick={() => downloadReceipt(recentWalkinReceipt, 'room')}
                 >
-                  📥 Download Official Receipt PDF
+                  <Download width="15" height="15" /> Download Official Receipt PDF
                 </button>
                 <button
                   className="btn-admin btn-admin-secondary"
@@ -557,7 +638,7 @@ export default function FrontDesk() {
                     onChange={(e) => setWalkinForm({ ...walkinForm, payment_confirmed: e.target.checked })}
                   />
                   <label htmlFor="payment_confirmed">
-                    ✓ I confirm that payment of {formatCurrency(totalWalkinAmount)} has been received and verified at the Front Desk.
+                    I confirm that payment of {formatCurrency(totalWalkinAmount)} has been received and verified at the Front Desk.
                   </label>
                 </div>
 
@@ -595,7 +676,7 @@ export default function FrontDesk() {
             <form onSubmit={handleSearchReceipt} style={{ padding: '1.75rem' }}>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <div className="search-input-wrapper" style={{ flex: 1 }}>
-                  <span className="search-icon">🔍</span>
+                  <span className="search-icon"><Search width="16" height="16" /></span>
                   <input
                     type="text"
                     required
@@ -651,7 +732,7 @@ export default function FrontDesk() {
                     <div className="receipt-row">
                       <span className="receipt-row-label">Payment Status</span>
                       <span className="receipt-row-value" style={{ color: '#059669', textTransform: 'uppercase' }}>
-                        ✓ {item.payment_status} ({item.payment_method})
+                        <Check width="12" height="12" /> {item.payment_status} ({item.payment_method})
                       </span>
                     </div>
                   </div>
@@ -666,7 +747,7 @@ export default function FrontDesk() {
                       className="btn-admin btn-admin-primary"
                       onClick={() => downloadReceipt(item, item.type || 'room')}
                     >
-                      📥 Download PDF Receipt
+                      <Download width="15" height="15" /> Download PDF Receipt
                     </button>
                   </div>
                 </div>

@@ -4,6 +4,7 @@ import api from '../../utils/api';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import { downloadReceipt } from '../../utils/receipt';
 import { useToast } from '../../context/ToastContext';
+import { Bell, Receipt, Money, Bed, Calendar, Key } from '../../components/Icons';
 import './Admin.css';
 
 export default function Dashboard() {
@@ -69,10 +70,10 @@ export default function Dashboard() {
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <Link to="/admin/dashboard/front-desk" className="btn-admin btn-admin-accent">
-            🛎️ Front Desk Desk
+            <Bell width="15" height="15" /> Front Desk
           </Link>
           <Link to="/admin/dashboard/receipts" className="btn-admin btn-admin-primary">
-            🧾 Search Receipts
+            <Receipt width="15" height="15" /> Search Receipts
           </Link>
         </div>
       </div>
@@ -85,7 +86,7 @@ export default function Dashboard() {
             <div className="stat-value">{formatCurrency(stats.total_revenue || 0)}</div>
             <div className="stat-sub">Rooms + Event Bookings</div>
           </div>
-          <div className="stat-icon-wrapper gold">💰</div>
+          <div className="stat-icon-wrapper gold"><Money /></div>
         </div>
 
         <div className="stat-card">
@@ -94,7 +95,7 @@ export default function Dashboard() {
             <div className="stat-value">{stats.room_bookings_count || 0}</div>
             <div className="stat-sub">Total reservations</div>
           </div>
-          <div className="stat-icon-wrapper black">🛏️</div>
+          <div className="stat-icon-wrapper black"><Bed /></div>
         </div>
 
         <div className="stat-card">
@@ -103,7 +104,7 @@ export default function Dashboard() {
             <div className="stat-value">{stats.event_bookings_count || 0}</div>
             <div className="stat-sub">Conferences & Galas</div>
           </div>
-          <div className="stat-icon-wrapper silver">🎉</div>
+          <div className="stat-icon-wrapper silver"><Calendar /></div>
         </div>
 
         <div className="stat-card">
@@ -112,7 +113,7 @@ export default function Dashboard() {
             <div className="stat-value">{stats.active_checked_in || 0}</div>
             <div className="stat-sub">Currently in-house</div>
           </div>
-          <div className="stat-icon-wrapper success">🔑</div>
+          <div className="stat-icon-wrapper success"><Key /></div>
         </div>
       </div>
 

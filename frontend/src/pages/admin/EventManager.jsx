@@ -3,15 +3,18 @@ import api from '../../utils/api';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import { downloadReceipt } from '../../utils/receipt';
 import { useToast } from '../../context/ToastContext';
+import { Calendar, Presentation, Search, Download } from '../../components/Icons';
 import './Admin.css';
 
 export default function EventManager() {
+  const PER_PAGE = 10;
   const [activeTab, setActiveTab] = useState('bookings'); // 'bookings' | 'spaces'
   const [eventBookings, setEventBookings] = useState([]);
   const [spaces, setSpaces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
   const [showAddSpaceModal, setShowAddSpaceModal] = useState(false);
   const { showToast } = useToast();
 
@@ -79,6 +82,11 @@ export default function EventManager() {
     }
   };
 
+  // Reset to page 1 whenever filters/search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter]);
+
   const filteredEvents = eventBookings.filter((evt) => {
     const q = searchQuery.toLowerCase();
     const matchesSearch =
@@ -91,6 +99,12 @@ export default function EventManager() {
     const matchesStatus = statusFilter === 'all' || evt.booking_status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  // Pagination (10 rows per page)
+  const totalPages = Math.max(1, Math.ceil(filteredEvents.length / PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const pageStart = (safePage - 1) * PER_PAGE;
+  const paginatedEvents = filteredEvents.slice(pageStart, pageStart + PER_PAGE);
 
   return (
     <div>
@@ -120,14 +134,14 @@ export default function EventManager() {
           className={`admin-tab-btn ${activeTab === 'bookings' ? 'active' : ''}`}
           onClick={() => setActiveTab('bookings')}
         >
-          <span>🎉 Event Reservations</span>
+          <span><Calendar width="16" height="16" /> Event Reservations</span>
           <span className="tab-badge">{eventBookings.length}</span>
         </button>
         <button
           className={`admin-tab-btn ${activeTab === 'spaces' ? 'active' : ''}`}
           onClick={() => setActiveTab('spaces')}
         >
-          <span>🏛️ Venue Spaces & Capacity</span>
+          <span><Presentation width="16" height="16" /> Venue Spaces & Capacity</span>
           <span className="tab-badge">{spaces.length}</span>
         </button>
       </div>
@@ -137,7 +151,7 @@ export default function EventManager() {
         <div className="admin-card">
           <div className="filter-bar">
             <div className="search-input-wrapper">
-              <span className="search-icon">🔍</span>
+              <span className="search-icon"><Search width="16" height="16" /></span>
               <input
                 type="text"
                 placeholder="Search event name, client, space, or Receipt ID..."
@@ -182,7 +196,7 @@ export default function EventManager() {
                     </td>
                   </tr>
                 ) : filteredEvents.length > 0 ? (
-                  filteredEvents.map((evt) => (
+                  paginatedEvents.map((evt) => (
                     <tr key={evt.id}>
                       <td>
                         <span className="receipt-code-pill">{evt.receipt_id}</span>
@@ -240,11 +254,11 @@ export default function EventManager() {
                           </select>
 
                           <button
-                            className="btn-admin btn-admin-secondary btn-admin-sm"
+                            className="btn-admin btn-admin-secondary btn-admin-sm btn-icon-only"
                             onClick={() => downloadReceipt(evt, 'event')}
                             title="Download Event Folio PDF"
                           >
-                            Receipt PDF
+                            <Download width="15" height="15" />
                           </button>
                         </div>
                       </td>
@@ -260,6 +274,44 @@ export default function EventManager() {
               </tbody>
             </table>
           </div>
+
+          {filteredEvents.length > PER_PAGE && (
+            <div className="pagination-bar">
+              <span className="pagination-info">
+                Showing {pageStart + 1}–{Math.min(pageStart + PER_PAGE, filteredEvents.length)} of {filteredEvents.length}
+              </span>
+              <div className="pagination-controls">
+                <button
+                  type="button"
+                  className="pagination-btn"
+                  disabled={safePage <= 1}
+                  onClick={() => setCurrentPage(p => p - 1)}
+                >
+                  Prev
+                </button>
+                <span className="pagination-pages">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                    <button
+                      type="button"
+                      key={n}
+                      className={`pagination-page ${n === safePage ? 'active' : ''}`}
+                      onClick={() => setCurrentPage(n)}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </span>
+                <button
+                  type="button"
+                  className="pagination-btn"
+                  disabled={safePage >= totalPages}
+                  onClick={() => setCurrentPage(p => p + 1)}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

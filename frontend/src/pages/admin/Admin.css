@@ -61,8 +61,8 @@
   display: inline-block;
   margin-top: 10px;
   padding: 2px 8px;
-  background: rgba(201, 169, 110, 0.15);
-  border: 1px solid rgba(201, 169, 110, 0.35);
+  background: rgba(146, 152, 160, 0.15);
+  border: 1px solid rgba(146, 152, 160, 0.35);
   color: var(--color-accent);
   border-radius: var(--radius-full);
   font-size: 0.7rem;
@@ -151,7 +151,7 @@
 }
 
 .admin-nav-item.active {
-  background: linear-gradient(90deg, rgba(201, 169, 110, 0.2), rgba(201, 169, 110, 0.05));
+  background: linear-gradient(90deg, rgba(146, 152, 160, 0.2), rgba(146, 152, 160, 0.05));
   color: #ffffff;
   border-left: 3px solid var(--color-accent);
   font-weight: 600;
@@ -357,8 +357,8 @@
 }
 
 .stat-icon-wrapper.gold {
-  background: rgba(201, 169, 110, 0.12);
-  border-color: rgba(201, 169, 110, 0.25);
+  background: rgba(146, 152, 160, 0.12);
+  border-color: rgba(146, 152, 160, 0.25);
   color: var(--color-accent-dark);
 }
 
@@ -421,7 +421,7 @@
 
 .admin-table th {
   background: #f9fafb;
-  padding: 0.85rem 1.25rem;
+  padding: 0.8rem 1rem;
   font-weight: 600;
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -432,10 +432,18 @@
 }
 
 .admin-table td {
-  padding: 1rem 1.25rem;
+  padding: 0.9rem 1rem;
   border-bottom: 1px solid #f3f4f6;
   color: #374151;
   vertical-align: middle;
+}
+
+.btn-icon-only {
+  padding: 0.35rem 0.45rem !important;
+  line-height: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .admin-table tbody tr:hover {
@@ -444,6 +452,88 @@
 
 .admin-table tr:last-child td {
   border-bottom: none;
+}
+
+/* Payment column */
+.payment-cell {
+  text-align: center;
+}
+
+.payment-cell > div {
+  line-height: 1.5;
+}
+
+.payment-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.payment-cell .payment-amount {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: #0a0a0a;
+  margin-top: 4px;
+  text-align: center;
+}
+
+/* Pagination */
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.9rem 1.25rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.pagination-info {
+  font-size: 0.82rem;
+  color: #6b7280;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pagination-btn,
+.pagination-page {
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #374151;
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.pagination-btn:hover:not(:disabled),
+.pagination-page:hover:not(.active) {
+  background: #f9fafb;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pagination-page.active {
+  background: var(--color-accent-dark);
+  border-color: var(--color-accent-dark);
+  color: #ffffff;
+}
+
+.pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 /* Status Badges */
@@ -456,6 +546,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .badge-pending {
@@ -936,7 +1027,7 @@
   left: -10%;
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(201, 169, 110, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(146, 152, 160, 0.08) 0%, transparent 70%);
   border-radius: 50%;
   pointer-events: none;
 }

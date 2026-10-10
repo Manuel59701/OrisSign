@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { Shield, Bell, Calendar } from '../../components/Icons';
 import './Admin.css';
 
 export default function AdminLogin() {
@@ -96,28 +97,28 @@ export default function AdminLogin() {
         </form>
 
         <div className="quick-demo-roles">
-          <div className="quick-demo-label">⚡ Quick Demo Access by Role:</div>
+          <div className="quick-demo-label">Quick Demo Access by Role:</div>
           <div className="quick-demo-btns">
             <button
               type="button"
               className="btn-demo-role"
               onClick={() => handleQuickDemo('admin@orissignatures.com', 'admin123')}
             >
-              👑 Main Admin
+              <Shield width="15" height="15" /> Main Admin
             </button>
             <button
               type="button"
               className="btn-demo-role"
               onClick={() => handleQuickDemo('frontdesk@orissignatures.com', 'frontdesk123')}
             >
-              🛎️ Front Desk
+              <Bell width="15" height="15" /> Front Desk
             </button>
             <button
               type="button"
               className="btn-demo-role"
               onClick={() => handleQuickDemo('events@orissignatures.com', 'events123')}
             >
-              🎉 Event Mgr
+              <Calendar width="15" height="15" /> Event Mgr
             </button>
           </div>
         </div>

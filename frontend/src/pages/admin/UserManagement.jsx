@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { useToast } from '../../context/ToastContext';
+import { Shield, Bell, Calendar } from '../../components/Icons';
 import './Admin.css';
 
 export default function UserManagement() {
@@ -69,13 +70,13 @@ export default function UserManagement() {
 
   const getRoleBadge = (role) => {
     if (role === 'admin') {
-      return <span className="badge" style={{ background: '#0a0a0a', color: '#ffffff' }}>👑 Main Admin</span>;
+      return <span className="badge" style={{ background: '#0a0a0a', color: '#ffffff' }}><Shield width="12" height="12" /> Main Admin</span>;
     }
     if (role === 'frontdesk') {
-      return <span className="badge badge-walkin">🛎️ Front Desk</span>;
+      return <span className="badge badge-walkin"><Bell width="12" height="12" /> Front Desk</span>;
     }
     if (role === 'eventmanager') {
-      return <span className="badge badge-online">🎉 Event Manager</span>;
+      return <span className="badge badge-online"><Calendar width="12" height="12" /> Event Manager</span>;
     }
     return <span className="badge">{role}</span>;
   };
@@ -219,9 +220,9 @@ export default function UserManagement() {
                     value={form.role}
                     onChange={(e) => setForm({ ...form, role: e.target.value })}
                   >
-                    <option value="frontdesk">🛎️ Front Desk (Check-ins, Walk-ins, Receipts)</option>
-                    <option value="eventmanager">🎉 Event Manager (Venues & Event Bookings)</option>
-                    <option value="admin">👑 Main Admin (Full Access to Everything)</option>
+<option value="frontdesk">Front Desk (Check-ins, Walk-ins, Receipts)</option>
+<option value="eventmanager">Event Manager (Venues & Event Bookings)</option>
+<option value="admin">Main Admin (Full Access to Everything)</option>
                   </select>
                 </div>
               </div>

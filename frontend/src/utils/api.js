@@ -162,6 +162,57 @@ const DEFAULT_BOOKINGS = [
   }
 ];
 
+const EXTRA_BOOKINGS = [
+  // [guest, email, phone, roomId, roomName, roomType, price, channel, status]
+  ['Oluwaseun Adeyemi', 'seun.a@example.com', '+234 803 111 2233', 1, 'Standard Deluxe Room', 'standard', 25000, 'online', 'pending'],
+  ['Adaeze Eze', 'adaeze.e@example.com', '+234 806 444 5566', 2, 'Executive Silver Suite', 'deluxe', 45000, 'online', 'pending'],
+  ['Emeka Obi', 'emeka.obi@example.com', '+234 809 777 8899', 3, 'Oris Signature Suite', 'suite', 75000, 'online', 'checked_in'],
+  ['Fatima Bello', 'fatima.b@example.com', '+234 812 222 3344', 1, 'Standard Deluxe Room', 'standard', 25000, 'walkin', 'checked_in'],
+  ['Chinedu Okafor', 'chinedu.o@example.com', '+234 805 333 4455', 2, 'Executive Silver Suite', 'deluxe', 45000, 'online', 'checked_out'],
+  ['Abiola Durosinmi', 'abiola.d@example.com', '+234 802 666 7788', 4, 'Presidential Penthouse', 'presidential', 150000, 'online', 'pending'],
+  ['Ngozi Chukwu', 'ngozi.c@example.com', '+234 810 888 9900', 1, 'Standard Deluxe Room', 'standard', 25000, 'walkin', 'checked_in'],
+  ['Tunde Bakare', 'tunde.b@example.com', '+234 803 555 6677', 3, 'Oris Signature Suite', 'suite', 75000, 'online', 'checked_in'],
+  ['Zainab Suleiman', 'zainab.s@example.com', '+234 806 999 0011', 2, 'Executive Silver Suite', 'deluxe', 45000, 'online', 'pending'],
+  ['Kelechi Ogunleye', 'kelechi.o@example.com', '+234 809 222 3344', 1, 'Standard Deluxe Room', 'standard', 25000, 'walkin', 'checked_out'],
+  ['Amara Nwosu', 'amara.n@example.com', '+234 812 333 4455', 4, 'Presidential Penthouse', 'presidential', 150000, 'online', 'checked_in'],
+  ['Yusuf Abdullahi', 'yusuf.a@example.com', '+234 805 444 5566', 2, 'Executive Silver Suite', 'deluxe', 45000, 'online', 'cancelled'],
+  ['Chioma Okeke', 'chioma.o@example.com', '+234 802 777 8899', 1, 'Standard Deluxe Room', 'standard', 25000, 'online', 'checked_in'],
+  ['Ibrahim Musa', 'ibrahim.m@example.com', '+234 810 000 1122', 3, 'Oris Signature Suite', 'suite', 75000, 'walkin', 'checked_in'],
+  ['Tola Adebayo', 'tola.a@example.com', '+234 803 222 3344', 2, 'Executive Silver Suite', 'deluxe', 45000, 'online', 'pending'],
+  ['Blessing Okafor', 'blessing.o@example.com', '+234 806 555 6677', 1, 'Standard Deluxe Room', 'standard', 25000, 'walkin', 'checked_in'],
+  ['Segun Alabi', 'segun.a@example.com', '+234 809 444 5566', 4, 'Presidential Penthouse', 'presidential', 150000, 'online', 'checked_out'],
+  ['Halima Yusuf', 'halima.y@example.com', '+234 812 555 6677', 2, 'Executive Silver Suite', 'deluxe', 45000, 'online', 'checked_in'],
+  ['Daniel Uche', 'daniel.u@example.com', '+234 805 666 7788', 1, 'Standard Deluxe Room', 'standard', 25000, 'online', 'checked_in'],
+  ['Victoria Nwankwo', 'victoria.n@example.com', '+234 802 888 9900', 3, 'Oris Signature Suite', 'suite', 75000, 'walkin', 'pending'],
+];
+
+const BOOKING_METHODS = ['card', 'pos', 'transfer', 'cash'];
+
+EXTRA_BOOKINGS.forEach((b, i) => {
+  const id = 10 + i;
+  const checkIn = new Date(Date.now() + 86400000 * (i % 4));
+  DEFAULT_BOOKINGS.push({
+    id,
+    receipt_id: 'ORS-' + (100452 + i * 7),
+    guest_name: b[0],
+    guest_email: b[1],
+    guest_phone: b[2],
+    room_id: b[3],
+    room_name: b[4],
+    room_type: b[5],
+    check_in_date: checkIn.toISOString().split('T')[0],
+    check_out_date: new Date(checkIn.getTime() + 86400000 * (1 + (i % 3))).toISOString().split('T')[0],
+    num_guests: 1 + (i % 3),
+    total_amount: b[6] * (1 + (i % 3)),
+    payment_status: 'paid',
+    payment_method: BOOKING_METHODS[i % BOOKING_METHODS.length],
+    booking_type: b[7],
+    check_in_status: b[8],
+    special_requests: i % 3 === 0 ? 'Early check-in requested, high floor' : '',
+    created_at: new Date(Date.now() - 86400000 * (1 + (i % 5))).toISOString()
+  });
+});
+
 const DEFAULT_EVENT_BOOKINGS = [
   {
     id: 1,
@@ -203,6 +254,56 @@ const DEFAULT_EVENT_BOOKINGS = [
   }
 ];
 
+const EXTRA_EVENT_BOOKINGS = [
+  // [client, email, phone, spaceId, spaceName, eventName, startDaysFromNow, pax, price, method, status]
+  ['Okupe & Co Annual Dinner', 'events@okupeco.com', '+234 803 222 1111', 1, 'The Grand Ballroom', 'Okupe & Co Annual Dinner Gala', 3, 420, 500000, 'transfer', 'confirmed'],
+  ['Lagos Tech Conference', 'hello@lagostech.io', '+234 806 333 4444', 2, 'The Executive Senate Hall', 'Pan-African AI Innovation Summit', 4, 190, 250000, 'card', 'confirmed'],
+  ['Amina Ibrahim Birthday', 'amina.ib@example.com', '+234 809 555 6666', 3, 'The Skyline Terrace & Garden', 'Amina Ibrahim Sunset Soiree', 6, 110, 180000, 'pos', 'confirmed'],
+  ['Oladipo Family Reunion', 'family@oladipo.com', '+234 812 666 7777', 4, 'The Obsidian VIP Lounge', 'Oladipo Family Private Dinner', 7, 45, 100000, 'cash', 'active'],
+  ['Rotex Business Forum', 'forum@rotexng.com', '+234 805 777 8888', 2, 'The Executive Senate Hall', 'Rotex Business Leadership Forum', 8, 170, 250000, 'transfer', 'confirmed'],
+  ['Bello & Sons Wedding', 'raji.wedding@example.com', '+234 802 888 9999', 1, 'The Grand Ballroom', 'Hafsat & Jibril Royal Wedding', 9, 480, 500000, 'card', 'confirmed'],
+  ['Taste of Lagos Culinary Show', 'culinary@tasteof.org', '+234 810 999 0000', 3, 'The Skyline Terrace & Garden', 'Taste of Lagos Chefs Showcase', 10, 115, 180000, 'pos', 'confirmed'],
+  ['AFRICA Beauty Expo', 'expo@africabeauty.ng', '+234 803 111 2222', 1, 'The Grand Ballroom', 'Africa Beauty & Style Expo', 11, 380, 500000, 'transfer', 'active'],
+  ['Crestview Investors Meet', 'invest@crestview.com', '+234 806 222 3333', 2, 'The Executive Senate Hall', 'Crestview Q3 Investors Meeting', 12, 150, 250000, 'card', 'completed'],
+  ['Zenith Music Pre-Awards', 'shows@zenithmusic.com', '+234 809 333 4444', 4, 'The Obsidian VIP Lounge', 'Zenith Music Pre-Awards Mixer', 13, 48, 100000, 'cash', 'confirmed'],
+  ['Noriko Fashion Show', 'noriko@fashion.ng', '+234 812 444 5555', 3, 'The Skyline Terrace & Garden', 'Noriko Runway Sunset Show', 14, 120, 180000, 'card', 'confirmed'],
+  ['Green Cities Forum', 'green@cities.org', '+234 805 555 6666', 2, 'The Executive Senate Hall', 'Sustainable Cities Leadership Forum', 15, 165, 250000, 'transfer', 'confirmed'],
+  ['Daramola Book Launch', 'daramola@author.ng', '+234 802 666 7777', 4, 'The Obsidian VIP Lounge', 'Daramola New Book Gala', 16, 42, 100000, 'pos', 'confirmed'],
+  ['Eagle Airline Gala', 'gala@eagleair.ng', '+234 810 777 8888', 1, 'The Grand Ballroom', 'Eagle Airline 20th Anniversary Gala', 17, 430, 500000, 'card', 'confirmed'],
+  ['Kano Chamber Trade Fair', 'chamber@kanocc.com', '+234 803 888 9999', 2, 'The Executive Senate Hall', 'Kano Chamber Business Fair', 18, 200, 250000, 'transfer', 'active'],
+  ['Oluwadara Proposal Dinner', 'private@oluwadara.com', '+234 806 999 0000', 3, 'The Skyline Terrace & Garden', 'Rooftop Proposal & Engagement Dinner', 19, 35, 180000, 'cash', 'confirmed'],
+  ['Nigerian Lawyers Dinner', 'dinner@nba.ng', '+234 809 000 1111', 1, 'The Grand Ballroom', 'NBA Annual Awards & Dinner', 20, 470, 500000, 'transfer', 'confirmed'],
+  ['Startup Pitch Night', 'pitch@starttup.ng', '+234 812 111 2222', 2, 'The Executive Senate Hall', 'Founders Pitch & Demo Night', 21, 140, 250000, 'pos', 'confirmed'],
+  ['Oasis Beauty Launch', 'oasis@beauty.com', '+234 805 222 3333', 4, 'The Obsidian VIP Lounge', 'Oasis Cosmetics Product Launch', 22, 50, 100000, 'card', 'completed'],
+  ['City Marathon Awards', 'marathon@cityrun.ng', '+234 802 333 4444', 1, 'The Grand Ballroom', 'City Marathon Winners Gala', 23, 390, 500000, 'pos', 'confirmed'],
+];
+
+const EVENT_METHODS = ['card', 'transfer', 'pos', 'cash'];
+
+EXTRA_EVENT_BOOKINGS.forEach((e, i) => {
+  const start = new Date(Date.now() + 86400000 * e[6]);
+  const end = new Date(start.getTime() + 86400000 * ((i % 2)));
+  DEFAULT_EVENT_BOOKINGS.push({
+    id: 20 + i,
+    receipt_id: 'ORS-EV-' + (6100 + i * 13),
+    client_name: e[0],
+    client_email: e[1],
+    client_phone: e[2],
+    event_space_id: e[3],
+    space_name: e[4],
+    event_name: e[5],
+    event_date: start.toISOString().split('T')[0],
+    event_end_date: end.toISOString().split('T')[0],
+    expected_guests: e[7],
+    total_amount: e[8],
+    payment_status: 'paid',
+    payment_method: EVENT_METHODS[i % EVENT_METHODS.length],
+    booking_status: e[10],
+    special_requests: i % 4 === 0 ? 'Full production & lighting setup required' : '',
+    created_at: new Date(Date.now() - 86400000 * (1 + (i % 6))).toISOString()
+  });
+});
+
 const DEFAULT_USERS = [
   {
     id: 1,
@@ -233,22 +334,28 @@ class ApiClient {
     this.initMockStore();
   }
 
+  seedIfStale(key, seed) {
+    const existing = this.getStorage(key, []);
+    if (!Array.isArray(existing) || existing.length === 0) {
+      this.setStorage(key, seed);
+      return;
+    }
+    if (existing.length < seed.length) {
+      // Merge: keep stored records, append seed records that are missing
+      const seen = new Set(existing.map(x => x.receipt_id || x.id));
+      const extra = seed.filter(s => !seen.has(s.receipt_id || s.id));
+      if (extra.length > 0) {
+        this.setStorage(key, [...existing, ...extra]);
+      }
+    }
+  }
+
   initMockStore() {
-    if (!localStorage.getItem('oris_mock_rooms')) {
-      localStorage.setItem('oris_mock_rooms', JSON.stringify(DEFAULT_ROOMS));
-    }
-    if (!localStorage.getItem('oris_mock_spaces')) {
-      localStorage.setItem('oris_mock_spaces', JSON.stringify(DEFAULT_SPACES));
-    }
-    if (!localStorage.getItem('oris_mock_bookings')) {
-      localStorage.setItem('oris_mock_bookings', JSON.stringify(DEFAULT_BOOKINGS));
-    }
-    if (!localStorage.getItem('oris_mock_event_bookings')) {
-      localStorage.setItem('oris_mock_event_bookings', JSON.stringify(DEFAULT_EVENT_BOOKINGS));
-    }
-    if (!localStorage.getItem('oris_mock_users')) {
-      localStorage.setItem('oris_mock_users', JSON.stringify(DEFAULT_USERS));
-    }
+    this.seedIfStale('oris_mock_rooms', DEFAULT_ROOMS);
+    this.seedIfStale('oris_mock_spaces', DEFAULT_SPACES);
+    this.seedIfStale('oris_mock_bookings', DEFAULT_BOOKINGS);
+    this.seedIfStale('oris_mock_event_bookings', DEFAULT_EVENT_BOOKINGS);
+    this.seedIfStale('oris_mock_users', DEFAULT_USERS);
   }
 
   getStorage(key, fallback = []) {
@@ -453,6 +560,30 @@ class ApiClient {
         return { success: true, message: 'Guest checked in successfully' };
       }
 
+      if (endpoint === 'api/bookings/checkout' && method === 'PUT') {
+        const bookingId = body.booking_id;
+        const booking = bookings.find(b => b.id === bookingId || b.receipt_id === bookingId);
+        bookings = bookings.map(b => (b.id === bookingId || b.receipt_id === bookingId)
+          ? { ...b, check_in_status: 'checked_out', booking_status: 'checked_out' }
+          : b);
+        this.setStorage('oris_mock_bookings', bookings);
+
+        // Free the room so it becomes available again
+        if (booking && booking.room_id != null) {
+          let rooms = this.getStorage('oris_mock_rooms', DEFAULT_ROOMS);
+          rooms = rooms.map(r => {
+            if (r.id === parseInt(booking.room_id)) {
+              const total = r.total_units || 1;
+              const next = Math.min(total, (r.available_units != null ? r.available_units : total - 1) + 1);
+              return { ...r, available_units: next, status: 'available' };
+            }
+            return r;
+          });
+          this.setStorage('oris_mock_rooms', rooms);
+        }
+        return { success: true, message: 'Guest checked out successfully' };
+      }
+
       if (method === 'GET') {
         return bookings;
       }
@@ -517,7 +648,23 @@ class ApiClient {
       return eventBookings;
     }
 
-    // 6. Receipts Search
+    // 6. Receipt View (public single lookup)
+    if (endpoint.startsWith('api/receipts/view')) {
+      const urlParams = new URLSearchParams(endpoint.split('?')[1] || '');
+      const id = (urlParams.get('id') || '').trim().toLowerCase();
+      const bookings = this.getStorage('oris_mock_bookings', DEFAULT_BOOKINGS);
+      const events = this.getStorage('oris_mock_event_bookings', DEFAULT_EVENT_BOOKINGS);
+
+      const room = bookings.find(b => (b.receipt_id || '').toLowerCase() === id);
+      if (room) return { ...room, type: 'room' };
+
+      const event = events.find(e => (e.receipt_id || '').toLowerCase() === id);
+      if (event) return { ...event, type: 'event' };
+
+      return { error: 'Receipt not found' };
+    }
+
+    // 6b. Receipts Search
     if (endpoint.startsWith('api/receipts/search')) {
       const urlParams = new URLSearchParams(endpoint.split('?')[1] || '');
       const query = (urlParams.get('q') || '').trim().toLowerCase();
@@ -658,6 +805,13 @@ class ApiClient {
     });
   }
 
+  async checkOut(bookingId) {
+    return this.request('api/bookings/checkout', {
+      method: 'PUT',
+      body: JSON.stringify({ booking_id: bookingId }),
+    });
+  }
+
   async createWalkIn(bookingData) {
     return this.request('api/bookings/walkin', {
       method: 'POST',
@@ -710,6 +864,10 @@ class ApiClient {
   // Receipts
   async searchReceipts(query) {
     return this.request(`api/receipts/search?q=${encodeURIComponent(query)}`);
+  }
+
+  async getReceipt(id) {
+    return this.request(`api/receipts/view?id=${encodeURIComponent(id)}`);
   }
 
   // Admin

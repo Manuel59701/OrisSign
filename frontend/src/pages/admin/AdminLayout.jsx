@@ -1,20 +1,25 @@
 import { useState } from 'react';
-import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { Grid, Bell, Calendar, Receipt, Bed, Users, Globe, LogOut, Menu, Shield } from '../../components/Icons';
 import './Admin.css';
 
 export default function AdminLayout() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Wait for the session bootstrap before deciding to redirect
+  if (loading) {
+    return null;
+  }
+
   // If not logged in, redirect to login
   if (!user) {
-    navigate('/admin');
-    return null;
+    return <Navigate to="/admin" replace />;
   }
 
   const handleLogout = () => {
@@ -45,7 +50,9 @@ export default function AdminLayout() {
             <span className="logo-subtitle">Luxury Hotel & Suites</span>
           </NavLink>
           <span className="sidebar-badge">
-            {role === 'admin' ? '👑 Main Admin' : role === 'frontdesk' ? '🛎️ Front Desk' : '🎉 Event Manager'}
+            {role === 'admin' ? (<><Shield width="13" height="13" /> Main Admin</>)
+              : role === 'frontdesk' ? (<><Bell width="13" height="13" /> Front Desk</>)
+              : (<><Calendar width="13" height="13" /> Event Manager</>)}
           </span>
         </div>
 
@@ -70,7 +77,7 @@ export default function AdminLayout() {
               className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
               onClick={() => setMobileOpen(false)}
             >
-              <span className="nav-icon">📊</span>
+              <span className="nav-icon"><Grid /></span>
               <span>Dashboard</span>
             </NavLink>
           )}
@@ -82,7 +89,7 @@ export default function AdminLayout() {
               className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
               onClick={() => setMobileOpen(false)}
             >
-              <span className="nav-icon">🛎️</span>
+              <span className="nav-icon"><Bell /></span>
               <span>Front Desk</span>
             </NavLink>
           )}
@@ -94,7 +101,7 @@ export default function AdminLayout() {
               className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
               onClick={() => setMobileOpen(false)}
             >
-              <span className="nav-icon">🎉</span>
+              <span className="nav-icon"><Calendar /></span>
               <span>Event Manager</span>
             </NavLink>
           )}
@@ -105,7 +112,7 @@ export default function AdminLayout() {
             className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
             onClick={() => setMobileOpen(false)}
           >
-            <span className="nav-icon">🧾</span>
+            <span className="nav-icon"><Receipt /></span>
             <span>Receipt Search</span>
           </NavLink>
 
@@ -116,8 +123,8 @@ export default function AdminLayout() {
               className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
               onClick={() => setMobileOpen(false)}
             >
-              <span className="nav-icon">🛏️</span>
-              <span>Rooms Inventory</span>
+                <span className="nav-icon"><Bed /></span>
+                <span>Rooms Inventory</span>
             </NavLink>
           )}
 
@@ -130,7 +137,7 @@ export default function AdminLayout() {
                 className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
                 onClick={() => setMobileOpen(false)}
               >
-                <span className="nav-icon">👥</span>
+                <span className="nav-icon"><Users /></span>
                 <span>Staff Management</span>
               </NavLink>
             </>
@@ -144,14 +151,14 @@ export default function AdminLayout() {
             rel="noopener noreferrer"
             className="btn-sidebar-link"
           >
-            <span>🌐</span>
+            <span><Globe /></span>
             <span>View Public Website</span>
           </a>
           <button
             onClick={handleLogout}
             className="btn-sidebar-link btn-sidebar-logout"
           >
-            <span>🚪</span>
+            <span><LogOut /></span>
             <span>Sign Out</span>
           </button>
         </div>
@@ -166,7 +173,7 @@ export default function AdminLayout() {
               onClick={() => setMobileOpen(!mobileOpen)}
               title="Toggle Menu"
             >
-              ☰
+              <Menu />
             </button>
             <h1 className="topbar-page-title">{getPageTitle()}</h1>
           </div>

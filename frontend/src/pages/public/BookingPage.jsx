@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { formatCurrency, getToday, getTomorrow, calculateNights } from '../../utils/helpers';
+import { Users } from '../../components/Icons';
 import './BookingPage.css';
 
 export default function BookingPage() {
@@ -51,8 +52,27 @@ export default function BookingPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const result = await api.createBooking(form);
-      navigate(`/confirmation/room/${result.receipt_id}`);
+      const result = await api.createBooking({ ...form, total_amount: totalAmount });
+      const booking = {
+        receipt_id: result.receipt_id,
+        guest_name: form.guest_name,
+        guest_email: form.guest_email,
+        guest_phone: form.guest_phone,
+        room_id: form.room_id,
+        room_name: selectedRoom?.name,
+        room_type: selectedRoom?.room_type,
+        check_in_date: form.check_in_date,
+        check_out_date: form.check_out_date,
+        nights: result.nights ?? nights,
+        num_guests: form.num_guests,
+        special_requests: form.special_requests,
+        total_amount: result.total_amount ?? result.booking?.total_amount ?? totalAmount,
+        payment_status: 'paid',
+        payment_method: 'online',
+        booking_type: 'online',
+      };
+      try { localStorage.setItem(`oris_receipt_${result.receipt_id}`, JSON.stringify(booking)); } catch { /* ignore */ }
+      navigate(`/confirmation/room/${result.receipt_id}`, { state: { booking } });
     } catch (err) {
       alert(err.error || 'Booking failed. Please try again.');
     }
@@ -160,7 +180,7 @@ export default function BookingPage() {
                       ))}
                     </div>
                     <div className="booking-room-footer">
-                      <span>👥 Up to {room.max_guests} guests • {room.available_units} room{room.available_units > 1 ? 's' : ''} left</span>
+                      <span><Users width="15" height="15" /> Up to {room.max_guests} guests • {room.available_units} room{room.available_units > 1 ? 's' : ''} left</span>
                       <div>
                         {nights > 0 && <span className="total-preview">Total: {formatCurrency(room.price_per_night * nights)}</span>}
                         <button className="btn btn-primary" onClick={() => handleRoomSelect(room)}>Select Room</button>

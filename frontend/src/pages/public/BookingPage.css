@@ -370,6 +370,198 @@
   color: var(--color-gray);
 }
 
+/* =========================================
+   Confirmation Page
+   ========================================= */
+
+.confirmation-container {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: var(--space-3xl) var(--space-lg);
+}
+
+.confirmation-card {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-3xl) var(--space-2xl);
+  text-align: center;
+}
+
+.confirmation-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto var(--space-lg);
+  border-radius: 50%;
+  background: var(--color-black);
+  color: var(--color-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirmation-icon svg {
+  width: 34px;
+  height: 34px;
+}
+
+.confirmation-card h2 {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  margin-bottom: var(--space-sm);
+}
+
+.confirmation-subtitle {
+  color: var(--color-gray);
+  margin-bottom: var(--space-xl);
+}
+
+.receipt-id-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-lg);
+  background: var(--color-white-off);
+  border: 1px dashed var(--color-silver);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-xl);
+}
+
+.receipt-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-gray);
+}
+
+.receipt-value {
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-black);
+  word-break: break-all;
+}
+
+.receipt-hint {
+  font-size: 0.8rem;
+  color: var(--color-gray);
+}
+
+.confirmation-summary {
+  text-align: left;
+  border: 1px solid var(--color-platinum);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: var(--space-xl);
+}
+
+.confirmation-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-md);
+  padding: 0.85rem var(--space-lg);
+  border-bottom: 1px solid var(--color-platinum);
+  font-size: 0.9rem;
+}
+
+.confirmation-summary-row:last-child {
+  border-bottom: none;
+}
+
+.confirmation-summary-label {
+  color: var(--color-gray);
+}
+
+.confirmation-summary-value {
+  font-weight: 600;
+  text-align: right;
+}
+
+.confirmation-summary-value.is-strong {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.confirmation-summary-value.is-paid {
+  color: #059669;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+
+.confirmation-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  text-align: left;
+  margin-bottom: var(--space-2xl);
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+}
+
+.info-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-white-off);
+  color: var(--color-black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.info-item p {
+  margin: 0;
+  color: var(--color-charcoal);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.confirmation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  justify-content: center;
+}
+
+.confirmation-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.confirmation-actions .btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (max-width: 768px) {
+  .confirmation-container {
+    padding: var(--space-xl) var(--space-md);
+  }
+
+  .confirmation-card {
+    padding: var(--space-xl) var(--space-lg);
+  }
+
+  .confirmation-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .date-picker-bar {

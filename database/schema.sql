@@ -120,11 +120,13 @@ CREATE TABLE contact_messages (
 );
 
 -- -----------------------------------------
--- Seed: Default Admin User
--- Password: admin123 (bcrypt hash)
+-- Seed: Default Staff Users
+-- Passwords: admin123 / frontdesk123 / events123 (bcrypt hashes)
 -- -----------------------------------------
 INSERT INTO users (full_name, email, password, role) VALUES
-('Main Admin', 'admin@orissignatures.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
+('Main Admin', 'admin@orissignatures.com', '$2y$10$WedoTbMcySY3JUAGRuGqZusyxY3xUmSFaB1yXhb0uMW1Rq3ApwK7K', 'admin'),
+('Grace Oladipo', 'frontdesk@orissignatures.com', '$2y$10$e94vOjycvFmtkOnpGfFIWeAgLoR16sthXO6UCOP5XRUS475Spat3u', 'frontdesk'),
+('Femi Balogun', 'events@orissignatures.com', '$2y$10$dlmP0MmKvgAuFovYN7IkJOeac2W3oOHZG3K.418YD0KSb7hIXqZd.', 'eventmanager');
 
 -- -----------------------------------------
 -- Seed: Sample Rooms

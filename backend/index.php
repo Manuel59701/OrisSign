@@ -8,11 +8,15 @@ require_once __DIR__ . '/middleware/cors.php';
 
 // Parse the request URI
 $requestUri = $_SERVER['REQUEST_URI'];
-$basePath = '/backend'; // Adjust based on your server setup
-
-// Remove base path and query string
 $path = parse_url($requestUri, PHP_URL_PATH);
-$path = str_replace($basePath, '', $path);
+
+// Strip everything up to and including the '/backend' segment so the router
+// works whether the API lives at the doc root or in a subfolder (e.g. /OrisSign/backend).
+$marker = '/backend';
+$pos = strpos($path, $marker);
+if ($pos !== false) {
+    $path = substr($path, $pos + strlen($marker));
+}
 $path = trim($path, '/');
 
 // Get request method
@@ -31,6 +35,7 @@ $routes = [
     // Room Bookings
     'api/bookings' => __DIR__ . '/api/bookings/index.php',
     'api/bookings/checkin' => __DIR__ . '/api/bookings/checkin.php',
+    'api/bookings/checkout' => __DIR__ . '/api/bookings/checkout.php',
     'api/bookings/walkin' => __DIR__ . '/api/bookings/walkin.php',
 
     // Events
@@ -39,6 +44,7 @@ $routes = [
 
     // Receipts
     'api/receipts/search' => __DIR__ . '/api/receipts/search.php',
+    'api/receipts/view' => __DIR__ . '/api/receipts/view.php',
 
     // Admin
     'api/admin/users' => __DIR__ . '/api/admin/users.php',
@@ -48,9 +54,13 @@ $routes = [
     'api/contact' => __DIR__ . '/api/contact/index.php',
 ];
 
-// Match route
+// Match route (longest/most-specific route first so sub-routes aren't shadowed)
 $matched = false;
-foreach ($routes as $route => $file) {
+$routesByLength = array_keys($routes);
+usort($routesByLength, fn($a, $b) => strlen($b) - strlen($a));
+
+foreach ($routesByLength as $route) {
+    $file = $routes[$route];
     // Check exact match or parameterized match
     if ($path === $route || strpos($path, $route . '/') === 0) {
         if (file_exists($file)) {

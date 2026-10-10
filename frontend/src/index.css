@@ -19,10 +19,10 @@
   --color-white-off: #F5F5F5;
   --color-white: #FFFFFF;
 
-  /* Accent (subtle gold for luxury touch) */
-  --color-accent: #C9A96E;
-  --color-accent-light: #E0CC9D;
-  --color-accent-dark: #A88A4E;
+  /* Accent (ash / graphite — subtle metallic touch) */
+  --color-accent: #9298A0;
+  --color-accent-light: #C3C8CE;
+  --color-accent-dark: #666C74;
 
   /* Status */
   --color-success: #4CAF50;
@@ -229,13 +229,14 @@ input, textarea, select, button {
 
 .btn-accent {
   background-color: var(--color-accent);
-  color: var(--color-white);
+  color: var(--color-black);
   border-color: var(--color-accent);
 }
 
 .btn-accent:hover {
-  background-color: var(--color-accent-dark);
-  border-color: var(--color-accent-dark);
+  background-color: var(--color-accent-light);
+  border-color: var(--color-accent-light);
+  color: var(--color-black);
 }
 
 .btn-sm {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { formatCurrency, getToday } from '../../utils/helpers';
+import { Users } from '../../components/Icons';
 import './BookingPage.css';
 
 export default function EventBookingPage() {
@@ -39,11 +40,28 @@ export default function EventBookingPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const result = await api.createEventBooking({
-        ...form,
-        event_end_date: form.event_end_date || form.event_date,
-      });
-      navigate(`/confirmation/event/${result.receipt_id}`);
+      const payload = { ...form, event_end_date: form.event_end_date || form.event_date, total_amount: totalAmount };
+      const result = await api.createEventBooking(payload);
+      const booking = {
+        receipt_id: result.receipt_id,
+        client_name: form.client_name,
+        client_email: form.client_email,
+        client_phone: form.client_phone,
+        event_space_id: form.event_space_id,
+        space_name: selectedSpace?.name,
+        event_name: form.event_name,
+        event_date: form.event_date,
+        event_end_date: payload.event_end_date,
+        expected_guests: form.expected_guests,
+        special_requests: form.special_requests,
+        total_amount: result.total_amount ?? result.booking?.total_amount ?? totalAmount,
+        days: result.days ?? days,
+        payment_status: 'paid',
+        payment_method: 'online',
+        booking_status: 'confirmed',
+      };
+      try { localStorage.setItem(`oris_receipt_${result.receipt_id}`, JSON.stringify(booking)); } catch { /* ignore */ }
+      navigate(`/confirmation/event/${result.receipt_id}`, { state: { booking } });
     } catch (err) {
       alert(err.error || 'Booking failed. Please try again.');
     }
@@ -127,7 +145,7 @@ export default function EventBookingPage() {
                       ))}
                     </div>
                     <div className="booking-room-footer">
-                      <span>👥 Capacity: {space.capacity} guests</span>
+                      <span><Users width="15" height="15" /> Capacity: {space.capacity} guests</span>
                       <button className="btn btn-primary" onClick={() => handleSpaceSelect(space)}>Select Venue</button>
                     </div>
                   </div>
