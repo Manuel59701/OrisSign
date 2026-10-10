@@ -1,9 +1,9 @@
-<?php
+﻿<?php
 /**
  * Room Bookings Endpoint
- * GET  /api/bookings          — List bookings (admin/frontdesk)
- * GET  /api/bookings/{id}     — Get single booking by ID or receipt_id
- * POST /api/bookings          — Create online booking (public)
+ * GET  /api/bookings          â€” List bookings (admin/frontdesk)
+ * GET  /api/bookings/{id}     â€” Get single booking by ID or receipt_id
+ * POST /api/bookings          â€” Create online booking (public)
  */
 
 require_once __DIR__ . '/../../config/database.php';
@@ -16,7 +16,7 @@ $id = $_GET['id'] ?? null;
 
 switch ($method) {
     case 'GET':
-        Auth::requireAuth(['admin', 'frontdesk']);
+        Auth::requireAuth(['admin', 'subadmin', 'frontdesk']);
 
         if ($id) {
             $stmt = $conn->prepare("
@@ -135,7 +135,7 @@ switch ($method) {
             ':check_out' => $data['check_out_date'],
             ':num_guests' => $data['num_guests'] ?? 1,
             ':total_amount' => $totalAmount,
-            ':payment_status' => $data['payment_status'] ?? 'paid',
+            ':payment_status' => $data['payment_status'] ?? 'pending',
             ':payment_method' => $data['payment_method'] ?? 'online',
             ':booking_type' => $data['booking_type'] ?? 'online',
             ':special_requests' => $data['special_requests'] ?? null
@@ -149,6 +149,20 @@ switch ($method) {
             'total_amount' => $totalAmount,
             'nights' => $nights
         ]);
+        break;
+
+    case 'DELETE':
+        Auth::requireAuth(['admin', 'subadmin', 'frontdesk']);
+        if (!$id) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Booking ID required']);
+            break;
+        }
+
+        $stmt = $conn->prepare("DELETE FROM room_bookings WHERE id = :id OR receipt_id = :receipt_id");
+        $stmt->execute([':id' => (int) $id, ':receipt_id' => $id]);
+
+        echo json_encode(['message' => 'Booking deleted']);
         break;
 
     default:

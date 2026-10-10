@@ -1,11 +1,11 @@
-<?php
+﻿<?php
 /**
  * Rooms Endpoint
- * GET  /api/rooms          — List all rooms (public)
- * GET  /api/rooms/{id}     — Get single room (public)
- * POST /api/rooms          — Create room (admin only)
- * PUT  /api/rooms/{id}     — Update room (admin only)
- * DELETE /api/rooms/{id}   — Delete room (admin only)
+ * GET  /api/rooms          â€” List all rooms (public)
+ * GET  /api/rooms/{id}     â€” Get single room (public)
+ * POST /api/rooms          â€” Create room (admin only)
+ * PUT  /api/rooms/{id}     â€” Update room (admin only)
+ * DELETE /api/rooms/{id}   â€” Delete room (admin only)
  */
 
 require_once __DIR__ . '/../../config/database.php';
@@ -48,7 +48,7 @@ switch ($method) {
         break;
 
     case 'POST':
-        Auth::requireAuth(['admin']);
+        Auth::requireAuth(['admin', 'subadmin']);
         $data = json_decode(file_get_contents("php://input"), true);
 
         $stmt = $conn->prepare("INSERT INTO rooms (name, room_type, description, price_per_night, max_guests, amenities, image_url, total_units) VALUES (:name, :room_type, :description, :price, :max_guests, :amenities, :image_url, :total_units)");
@@ -68,7 +68,7 @@ switch ($method) {
         break;
 
     case 'PUT':
-        Auth::requireAuth(['admin']);
+        Auth::requireAuth(['admin', 'subadmin']);
         if (!$id) {
             http_response_code(400);
             echo json_encode(['error' => 'Room ID required']);
@@ -95,7 +95,7 @@ switch ($method) {
         break;
 
     case 'DELETE':
-        Auth::requireAuth(['admin']);
+        Auth::requireAuth(['admin', 'subadmin']);
         if (!$id) {
             http_response_code(400);
             echo json_encode(['error' => 'Room ID required']);

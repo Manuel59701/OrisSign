@@ -36,6 +36,7 @@ $routes = [
     'api/bookings' => __DIR__ . '/api/bookings/index.php',
     'api/bookings/checkin' => __DIR__ . '/api/bookings/checkin.php',
     'api/bookings/checkout' => __DIR__ . '/api/bookings/checkout.php',
+    'api/bookings/payment' => __DIR__ . '/api/bookings/payment.php',
     'api/bookings/walkin' => __DIR__ . '/api/bookings/walkin.php',
 
     // Events

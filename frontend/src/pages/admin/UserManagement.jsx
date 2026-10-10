@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { useToast } from '../../context/ToastContext';
-import { Shield, Bell, Calendar } from '../../components/Icons';
+import { Shield, Bell, Calendar, Settings, Trash } from '../../components/Icons';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import PasswordInput from '../../components/PasswordInput';
 import './Admin.css';
 
 export default function UserManagement() {
@@ -9,6 +11,15 @@ export default function UserManagement() {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const { showToast } = useToast();
+
+  // Password reset modal state
+  const [resetUser, setResetUser] = useState(null);
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetConfirm, setResetConfirm] = useState('');
+  const [resetting, setResetting] = useState(false);
+
+  // Delete confirmation modal state
+  const [deleteConfirmUser, setDeleteConfirmUser] = useState(null);
 
   const [form, setForm] = useState({
     full_name: '',
@@ -52,16 +63,58 @@ export default function UserManagement() {
     }
   };
 
-  const handleDeleteUser = async (id, name, role) => {
-    if (role === 'admin' && users.filter((u) => u.role === 'admin').length <= 1) {
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (!resetUser || !resetPassword) return;
+    if (resetPassword.length < 6) {
+      showToast('Password must be at least 6 characters.', 'warning');
+      return;
+    }
+    if (resetPassword !== resetConfirm) {
+      showToast('Passwords do not match.', 'warning');
+      return;
+    }
+    setResetting(true);
+    try {
+      await api.updateUser(resetUser.id, {
+        full_name: resetUser.full_name,
+        email: resetUser.email,
+        role: resetUser.role,
+        password: resetPassword,
+      });
+      showToast(`Password updated for ${resetUser.full_name}.`, 'success');
+      setResetUser(null);
+      setResetPassword('');
+      setResetConfirm('');
+      loadUsers();
+    } catch (err) {
+      showToast(err.error || 'Failed to reset password', 'error');
+    } finally {
+      setResetting(false);
+    }
+  };
+
+  const openResetModal = (user) => {
+    setResetPassword('');
+    setResetConfirm('');
+    setResetUser({ ...user });
+  };
+
+  const openDeleteConfirm = (user) => {
+    if (user.role === 'admin' && users.filter((u) => u.role === 'admin').length <= 1) {
       showToast('Cannot delete the primary Main Admin account.', 'warning');
       return;
     }
-    if (!window.confirm(`Revoke portal access for ${name}?`)) return;
+    setDeleteConfirmUser({ ...user });
+  };
 
+  const confirmDeleteUser = async () => {
+    if (!deleteConfirmUser) return;
+    const user = deleteConfirmUser;
+    setDeleteConfirmUser(null);
     try {
-      await api.deleteUser(id);
-      showToast(`User ${name} removed`, 'info');
+      await api.deleteUser(user.id);
+      showToast(`User ${user.full_name} removed`, 'info');
       loadUsers();
     } catch (err) {
       showToast(err.error || 'Failed to delete user', 'error');
@@ -71,6 +124,9 @@ export default function UserManagement() {
   const getRoleBadge = (role) => {
     if (role === 'admin') {
       return <span className="badge" style={{ background: '#0a0a0a', color: '#ffffff' }}><Shield width="12" height="12" /> Main Admin</span>;
+    }
+    if (role === 'subadmin') {
+      return <span className="badge" style={{ background: '#374151', color: '#ffffff' }}><Shield width="12" height="12" /> Sub Admin</span>;
     }
     if (role === 'frontdesk') {
       return <span className="badge badge-walkin"><Bell width="12" height="12" /> Front Desk</span>;
@@ -135,7 +191,7 @@ export default function UserManagement() {
                     </td>
                     <td>{getRoleBadge(u.role)}</td>
                     <td style={{ fontSize: '0.82rem', color: '#4b5563' }}>
-                      {u.role === 'admin'
+                      {u.role === 'admin' || u.role === 'subadmin'
                         ? 'Full System Control (Rooms, Events, Staff, Reports)'
                         : u.role === 'frontdesk'
                         ? 'Room Check-Ins, Walk-Ins & Receipt Search'
@@ -145,14 +201,24 @@ export default function UserManagement() {
                       {u.created_at || 'Active'}
                     </td>
                     <td style={{ textAlign: 'right' }}>
-                      {u.role !== 'admin' && (
+                      <div className="action-buttons-group" style={{ justifyContent: 'flex-end' }}>
                         <button
-                          className="btn-admin btn-admin-danger btn-admin-sm"
-                          onClick={() => handleDeleteUser(u.id, u.full_name, u.role)}
+                          className="btn-admin btn-admin-secondary btn-admin-sm btn-icon-only"
+                          onClick={() => openResetModal(u)}
+                          title={`Reset password for ${u.full_name}`}
                         >
-                          Revoke Access
+                          <Settings width="15" height="15" />
                         </button>
-                      )}
+                        {u.role !== 'admin' && (
+                          <button
+                            className="btn-admin btn-admin-danger btn-admin-sm btn-icon-only"
+                            onClick={() => openDeleteConfirm(u)}
+                            title="Delete this staff account"
+                          >
+                            <Trash width="15" height="15" />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -205,8 +271,7 @@ export default function UserManagement() {
 
                 <div className="form-field">
                   <label>Password *</label>
-                  <input
-                    type="password"
+                  <PasswordInput
                     required
                     placeholder="••••••••"
                     value={form.password}
@@ -222,7 +287,7 @@ export default function UserManagement() {
                   >
 <option value="frontdesk">Front Desk (Check-ins, Walk-ins, Receipts)</option>
 <option value="eventmanager">Event Manager (Venues & Event Bookings)</option>
-<option value="admin">Main Admin (Full Access to Everything)</option>
+<option value="subadmin">Sub Admin (Full System Access, Removable)</option>
                   </select>
                 </div>
               </div>
@@ -243,6 +308,80 @@ export default function UserManagement() {
           </div>
         </div>
       )}
+
+      {/* Reset Password Modal */}
+      {resetUser && (
+        <div className="modal-overlay" onClick={() => setResetUser(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">Reset Login Password</h3>
+              <button className="modal-close-btn" onClick={() => setResetUser(null)}>
+                &times;
+              </button>
+            </div>
+
+            <form onSubmit={handleResetPassword}>
+              <div className="modal-body">
+                <p style={{ fontSize: '0.85rem', color: '#4b5563', marginTop: 0 }}>
+                  Set a new sign-in password for{' '}
+                  <strong>{resetUser.full_name}</strong> ({resetUser.email}).
+                </p>
+
+                <div className="form-field">
+                  <label>New Password *</label>
+                  <PasswordInput
+                    required
+                    autoFocus
+                    placeholder="Minimum 6 characters"
+                    value={resetPassword}
+                    onChange={(e) => setResetPassword(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label>Confirm New Password *</label>
+                  <PasswordInput
+                    required
+                    placeholder="Re-enter the new password"
+                    value={resetConfirm}
+                    onChange={(e) => setResetConfirm(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn-admin btn-admin-secondary"
+                  onClick={() => setResetUser(null)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-admin btn-admin-accent" disabled={resetting}>
+                  {resetting ? 'Saving...' : 'Reset Password'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete account confirmation modal */}
+      <ConfirmDialog
+        open={!!deleteConfirmUser}
+        title="Delete Staff Account"
+        variant="danger"
+        icon={<Trash width="40" height="40" />}
+        message={deleteConfirmUser ? (
+          <>
+            Revoke portal access for <strong>{deleteConfirmUser.full_name}</strong>{' '}
+            ({deleteConfirmUser.email})? They will no longer be able to sign in.
+          </>
+        ) : null}
+        confirmLabel="Delete"
+        onClose={() => setDeleteConfirmUser(null)}
+        onConfirm={confirmDeleteUser}
+      />
     </div>
   );
 }

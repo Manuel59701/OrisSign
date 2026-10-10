@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { Shield, Bell, Calendar } from '../../components/Icons';
+import PasswordInput from '../../components/PasswordInput';
 import './Admin.css';
 
 export default function AdminLogin() {
@@ -77,8 +78,7 @@ export default function AdminLogin() {
 
           <div className="form-field">
             <label>Password</label>
-            <input
-              type="password"
+            <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"

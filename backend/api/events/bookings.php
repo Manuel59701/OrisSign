@@ -1,9 +1,9 @@
-<?php
+﻿<?php
 /**
  * Event Bookings Endpoint
- * GET  /api/events/bookings     — List event bookings (admin/eventmanager)
- * POST /api/events/bookings     — Create event booking (public)
- * PUT  /api/events/bookings/{id} — Update event booking status
+ * GET  /api/events/bookings     â€” List event bookings (admin/eventmanager)
+ * POST /api/events/bookings     â€” Create event booking (public)
+ * PUT  /api/events/bookings/{id} â€” Update event booking status
  */
 
 require_once __DIR__ . '/../../config/database.php';
@@ -16,7 +16,7 @@ $id = $_GET['id'] ?? null;
 
 switch ($method) {
     case 'GET':
-        Auth::requireAuth(['admin', 'eventmanager']);
+        Auth::requireAuth(['admin', 'subadmin', 'eventmanager']);
 
         if ($id) {
             $stmt = $conn->prepare("
@@ -143,7 +143,7 @@ switch ($method) {
         break;
 
     case 'PUT':
-        Auth::requireAuth(['admin', 'eventmanager']);
+        Auth::requireAuth(['admin', 'subadmin', 'eventmanager']);
         if (!$id) {
             http_response_code(400);
             echo json_encode(['error' => 'Booking ID required']);
@@ -166,6 +166,20 @@ switch ($method) {
         ]);
 
         echo json_encode(['message' => 'Event booking updated']);
+        break;
+
+    case 'DELETE':
+        Auth::requireAuth(['admin', 'subadmin', 'eventmanager']);
+        if (!$id) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Booking ID required']);
+            break;
+        }
+
+        $stmt = $conn->prepare("DELETE FROM event_bookings WHERE id = :id OR receipt_id = :receipt_id");
+        $stmt->execute([':id' => (int) $id, ':receipt_id' => $id]);
+
+        echo json_encode(['message' => 'Event booking deleted']);
         break;
 
     default:

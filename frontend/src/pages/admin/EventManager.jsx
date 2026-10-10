@@ -3,7 +3,8 @@ import api from '../../utils/api';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import { downloadReceipt } from '../../utils/receipt';
 import { useToast } from '../../context/ToastContext';
-import { Calendar, Presentation, Search, Download } from '../../components/Icons';
+import { Calendar, Presentation, Search, Download, Trash } from '../../components/Icons';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import EventCalendarView from './EventCalendarView';
 import './Admin.css';
 
@@ -19,6 +20,7 @@ export default function EventManager() {
   const [showAddSpaceModal, setShowAddSpaceModal] = useState(false);
   const [showAddEventModal, setShowAddEventModal] = useState(false);
   const [noteEvent, setNoteEvent] = useState(null);
+  const [deleteConfirmEvent, setDeleteConfirmEvent] = useState(null);
   const [eventSubmitting, setEventSubmitting] = useState(false);
   const { showToast } = useToast();
 
@@ -155,6 +157,22 @@ export default function EventManager() {
       loadData();
     } catch (err) {
       showToast(err.error || 'Failed to create event space', 'error');
+    }
+  };
+
+  const openDeleteConfirm = (evt) => setDeleteConfirmEvent({ ...evt });
+
+  const confirmDeleteEvent = async () => {
+    if (!deleteConfirmEvent) return;
+    const evt = deleteConfirmEvent;
+    setDeleteConfirmEvent(null);
+    try {
+      await api.deleteEventBooking(evt.id);
+      try { localStorage.removeItem(`oris_receipt_${evt.receipt_id}`); } catch { /* ignore */ }
+      showToast('Event booking deleted.', 'success');
+      loadData();
+    } catch (err) {
+      showToast(err.error || 'Failed to delete event booking', 'error');
     }
   };
 
@@ -379,6 +397,14 @@ export default function EventManager() {
                             title="Download Event Folio PDF"
                           >
                             <Download width="15" height="15" />
+                          </button>
+
+                          <button
+                            className="btn-admin btn-admin-danger btn-admin-sm btn-icon-only"
+                            onClick={() => openDeleteConfirm(evt)}
+                            title="Delete this event booking"
+                          >
+                            <Trash width="15" height="15" />
                           </button>
                         </div>
                       </td>
@@ -775,6 +801,23 @@ export default function EventManager() {
           </div>
         </div>
       )}
+
+      {/* Delete event booking confirmation modal */}
+      <ConfirmDialog
+        open={!!deleteConfirmEvent}
+        title="Delete Event Booking"
+        variant="danger"
+        icon={<Trash width="40" height="40" />}
+        message={deleteConfirmEvent ? (
+          <>
+            Delete <strong>{deleteConfirmEvent.event_name}</strong>{' '}
+            {deleteConfirmEvent.receipt_id ? `(${deleteConfirmEvent.receipt_id})` : ''}?
+          </>
+        ) : null}
+        confirmLabel="Delete"
+        onClose={() => setDeleteConfirmEvent(null)}
+        onConfirm={confirmDeleteEvent}
+      />
     </div>
   );
 }

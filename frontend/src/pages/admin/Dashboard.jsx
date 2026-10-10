@@ -49,8 +49,11 @@ export default function Dashboard() {
 
   const stats = data || {
     total_revenue: 0,
+    pending_revenue: 0,
     room_bookings_count: 0,
+    pending_room_bookings_count: 0,
     event_bookings_count: 0,
+    pending_event_bookings_count: 0,
     active_checked_in: 0,
     occupancy_rate: 0,
     recent_bookings: [],
@@ -85,6 +88,7 @@ export default function Dashboard() {
             <div className="stat-label">Total Revenue</div>
             <div className="stat-value">{formatCurrency(stats.total_revenue || 0)}</div>
             <div className="stat-sub">Rooms + Event Bookings</div>
+            <div className="stat-pending">Pending: {formatCurrency(stats.pending_revenue || 0)}</div>
           </div>
           <div className="stat-icon-wrapper gold"><Money /></div>
         </div>
@@ -93,7 +97,8 @@ export default function Dashboard() {
           <div>
             <div className="stat-label">Room Bookings</div>
             <div className="stat-value">{stats.room_bookings_count || 0}</div>
-            <div className="stat-sub">Total reservations</div>
+            <div className="stat-sub">Confirmed reservations</div>
+            <div className="stat-pending">Pending: {stats.pending_room_bookings_count || 0}</div>
           </div>
           <div className="stat-icon-wrapper black"><Bed /></div>
         </div>
@@ -102,7 +107,8 @@ export default function Dashboard() {
           <div>
             <div className="stat-label">Event Bookings</div>
             <div className="stat-value">{stats.event_bookings_count || 0}</div>
-            <div className="stat-sub">Conferences & Galas</div>
+            <div className="stat-sub">Confirmed conferences & galas</div>
+            <div className="stat-pending">Pending: {stats.pending_event_bookings_count || 0}</div>
           </div>
           <div className="stat-icon-wrapper silver"><Calendar /></div>
         </div>

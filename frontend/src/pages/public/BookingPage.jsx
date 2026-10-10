@@ -52,7 +52,7 @@ export default function BookingPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const result = await api.createBooking({ ...form, total_amount: totalAmount });
+      const result = await api.createBooking({ ...form, total_amount: totalAmount, payment_status: 'pending' });
       const booking = {
         receipt_id: result.receipt_id,
         guest_name: form.guest_name,

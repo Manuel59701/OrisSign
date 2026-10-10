@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Admin Dashboard Stats Endpoint
  * GET /api/admin/dashboard
@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-$authUser = Auth::requireAuth(['admin', 'frontdesk', 'eventmanager']);
+$authUser = Auth::requireAuth(['admin', 'subadmin', 'frontdesk', 'eventmanager']);
 
 $db = new Database();
 $conn = $db->getConnection();
@@ -39,13 +39,37 @@ $stats['todays_checkins'] = $stmt->fetch()['total'];
 $stmt = $conn->query("SELECT COUNT(*) as total FROM room_bookings WHERE booking_status = 'reserved'");
 $stats['pending_bookings'] = $stmt->fetch()['total'];
 
-// Total room revenue
-$stmt = $conn->query("SELECT COALESCE(SUM(total_amount), 0) as total FROM room_bookings WHERE payment_status = 'paid'");
+// Confirmed room revenue (booked/checked-in, excluding reserved & cancelled)
+$stmt = $conn->query("SELECT COALESCE(SUM(total_amount), 0) as total FROM room_bookings WHERE booking_status IN ('checked_in', 'checked_out')");
 $stats['room_revenue'] = $stmt->fetch()['total'];
 
-// Total event revenue
-$stmt = $conn->query("SELECT COALESCE(SUM(total_amount), 0) as total FROM event_bookings WHERE payment_status = 'paid'");
+// Pending room revenue (reserved / not yet confirmed)
+$stmt = $conn->query("SELECT COALESCE(SUM(total_amount), 0) as total FROM room_bookings WHERE booking_status = 'reserved'");
+$stats['pending_room_revenue'] = $stmt->fetch()['total'];
+
+// Confirmed event revenue
+$stmt = $conn->query("SELECT COALESCE(SUM(total_amount), 0) as total FROM event_bookings WHERE booking_status IN ('confirmed', 'active', 'completed')");
 $stats['event_revenue'] = $stmt->fetch()['total'];
+
+// Pending event revenue
+$stmt = $conn->query("SELECT COALESCE(SUM(total_amount), 0) as total FROM event_bookings WHERE booking_status IN ('pending', 'reserved')");
+$stats['pending_event_revenue'] = $stmt->fetch()['total'];
+
+// Confirmed room bookings tally
+$stmt = $conn->query("SELECT COUNT(*) as total FROM room_bookings WHERE booking_status IN ('checked_in', 'checked_out')");
+$stats['room_bookings_count'] = $stmt->fetch()['total'];
+
+// Pending room bookings tally
+$stmt = $conn->query("SELECT COUNT(*) as total FROM room_bookings WHERE booking_status = 'reserved'");
+$stats['pending_room_bookings_count'] = $stmt->fetch()['total'];
+
+// Confirmed event bookings tally
+$stmt = $conn->query("SELECT COUNT(*) as total FROM event_bookings WHERE booking_status IN ('confirmed', 'active', 'completed')");
+$stats['event_bookings_count'] = $stmt->fetch()['total'];
+
+// Pending event bookings tally
+$stmt = $conn->query("SELECT COUNT(*) as total FROM event_bookings WHERE booking_status IN ('pending', 'reserved')");
+$stats['pending_event_bookings_count'] = $stmt->fetch()['total'];
 
 // Upcoming events
 $stmt = $conn->prepare("SELECT COUNT(*) as total FROM event_bookings WHERE event_date >= :today AND booking_status NOT IN ('cancelled', 'completed')");
@@ -71,5 +95,6 @@ $stmt = $conn->query("
 $stats['recent_events'] = $stmt->fetchAll();
 
 $stats['total_revenue'] = $stats['room_revenue'] + $stats['event_revenue'];
+$stats['pending_revenue'] = $stats['pending_room_revenue'] + $stats['pending_event_revenue'];
 
 echo json_encode($stats);

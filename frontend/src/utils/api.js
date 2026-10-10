@@ -512,7 +512,7 @@ class ApiClient {
           check_out_date: body.check_out_date,
           num_guests: body.num_guests || 1,
           total_amount: body.total_amount || (room ? room.price_per_night : 45000),
-          payment_status: 'paid',
+          payment_status: body.payment_status || 'pending',
           payment_method: body.payment_method || 'card',
           booking_type: 'online',
           check_in_status: 'pending',
@@ -584,6 +584,23 @@ class ApiClient {
         return { success: true, message: 'Guest checked out successfully' };
       }
 
+      if (endpoint === 'api/bookings/payment' && method === 'PUT') {
+        const bookingId = body.booking_id;
+        const status = body.payment_status || 'paid';
+        bookings = bookings.map(b => (b.id === bookingId || b.receipt_id === bookingId)
+          ? { ...b, payment_status: status }
+          : b);
+        this.setStorage('oris_mock_bookings', bookings);
+        return { success: true, message: 'Payment status updated' };
+      }
+
+      if (method === 'DELETE') {
+        const id = parseInt(endpoint.split('/').pop());
+        bookings = bookings.filter(b => b.id !== id && b.receipt_id !== id);
+        this.setStorage('oris_mock_bookings', bookings);
+        return { success: true, message: 'Booking deleted' };
+      }
+
       if (method === 'GET') {
         return bookings;
       }
@@ -645,6 +662,13 @@ class ApiClient {
         return { success: true };
       }
 
+      if (method === 'DELETE') {
+        const id = parseInt(endpoint.split('/').pop());
+        eventBookings = eventBookings.filter(b => b.id !== id && b.receipt_id !== id);
+        this.setStorage('oris_mock_event_bookings', eventBookings);
+        return { success: true, message: 'Event booking deleted' };
+      }
+
       return eventBookings;
     }
 
@@ -688,14 +712,26 @@ class ApiClient {
       const events = this.getStorage('oris_mock_event_bookings', DEFAULT_EVENT_BOOKINGS);
       const rooms = this.getStorage('oris_mock_rooms', DEFAULT_ROOMS);
 
-      const roomRevenue = bookings.reduce((sum, b) => sum + (Number(b.total_amount) || 0), 0);
-      const eventRevenue = events.reduce((sum, e) => sum + (Number(e.total_amount) || 0), 0);
+      const CONFIRMED_EVENT = ['confirmed', 'active', 'completed'];
+      const PENDING_EVENT = ['pending', 'reserved'];
+      const confirmedBookings = bookings.filter(b => b.check_in_status && b.check_in_status !== 'pending');
+      const pendingBookings = bookings.filter(b => b.check_in_status === 'pending');
+      const confirmedEvents = events.filter(e => CONFIRMED_EVENT.includes(e.booking_status));
+      const pendingEvents = events.filter(e => PENDING_EVENT.includes(e.booking_status));
+
+      const roomRevenue = confirmedBookings.reduce((sum, b) => sum + (Number(b.total_amount) || 0), 0);
+      const eventRevenue = confirmedEvents.reduce((sum, e) => sum + (Number(e.total_amount) || 0), 0);
+      const pendingRoomRevenue = pendingBookings.reduce((sum, b) => sum + (Number(b.total_amount) || 0), 0);
+      const pendingEventRevenue = pendingEvents.reduce((sum, e) => sum + (Number(e.total_amount) || 0), 0);
       const activeCheckedIn = bookings.filter(b => b.check_in_status === 'checked_in').length;
 
       return {
         total_revenue: roomRevenue + eventRevenue,
-        room_bookings_count: bookings.length,
-        event_bookings_count: events.length,
+        pending_revenue: pendingRoomRevenue + pendingEventRevenue,
+        room_bookings_count: confirmedBookings.length,
+        pending_room_bookings_count: pendingBookings.length,
+        event_bookings_count: confirmedEvents.length,
+        pending_event_bookings_count: pendingEvents.length,
         active_checked_in: activeCheckedIn,
         occupancy_rate: 68,
         recent_bookings: bookings.slice(0, 5),
@@ -716,6 +752,12 @@ class ApiClient {
       if (method === 'DELETE') {
         const id = parseInt(endpoint.split('/').pop());
         users = users.filter(u => u.id !== id);
+        this.setStorage('oris_mock_users', users);
+        return { success: true };
+      }
+      if (method === 'PUT') {
+        const id = parseInt(endpoint.split('/').pop());
+        users = users.map(u => u.id === id ? { ...u, ...body } : u);
         this.setStorage('oris_mock_users', users);
         return { success: true };
       }
@@ -812,6 +854,17 @@ class ApiClient {
     });
   }
 
+  async markPaid(bookingId, paymentStatus = 'paid') {
+    return this.request('api/bookings/payment', {
+      method: 'PUT',
+      body: JSON.stringify({ booking_id: bookingId, payment_status: paymentStatus }),
+    });
+  }
+
+  async deleteBooking(bookingId) {
+    return this.request(`api/bookings/${bookingId}`, { method: 'DELETE' });
+  }
+
   async createWalkIn(bookingData) {
     return this.request('api/bookings/walkin', {
       method: 'POST',
@@ -859,6 +912,10 @@ class ApiClient {
       method: 'PUT',
       body: JSON.stringify(statusData),
     });
+  }
+
+  async deleteEventBooking(bookingId) {
+    return this.request(`api/events/bookings/${bookingId}`, { method: 'DELETE' });
   }
 
   // Receipts

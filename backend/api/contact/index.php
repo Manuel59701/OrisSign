@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 /**
  * Contact Form Endpoint
- * POST /api/contact — Submit a contact message (public)
- * GET  /api/contact — List messages (admin only)
+ * POST /api/contact â€” Submit a contact message (public)
+ * GET  /api/contact â€” List messages (admin only)
  */
 
 require_once __DIR__ . '/../../config/database.php';
@@ -36,7 +36,7 @@ switch ($method) {
         break;
 
     case 'GET':
-        Auth::requireAuth(['admin']);
+        Auth::requireAuth(['admin', 'subadmin']);
 
         $stmt = $conn->prepare("SELECT * FROM contact_messages ORDER BY created_at DESC");
         $stmt->execute();

@@ -39,6 +39,7 @@ export default function AdminLayout() {
   };
 
   const role = user.role || 'admin';
+  const isAdmin = role === 'admin' || role === 'subadmin';
 
   return (
     <div className="admin-layout">
@@ -51,6 +52,7 @@ export default function AdminLayout() {
           </NavLink>
           <span className="sidebar-badge">
             {role === 'admin' ? (<><Shield width="13" height="13" /> Main Admin</>)
+              : role === 'subadmin' ? (<><Shield width="13" height="13" /> Sub Admin</>)
               : role === 'frontdesk' ? (<><Bell width="13" height="13" /> Front Desk</>)
               : (<><Calendar width="13" height="13" /> Event Manager</>)}
           </span>
@@ -70,7 +72,7 @@ export default function AdminLayout() {
           <div className="nav-section-label">Main Navigation</div>
 
           {/* Admin has access to Dashboard */}
-          {role === 'admin' && (
+          {isAdmin && (
             <NavLink
               to="/admin/dashboard"
               end
@@ -83,7 +85,7 @@ export default function AdminLayout() {
           )}
 
           {/* Front Desk & Admin */}
-          {(role === 'admin' || role === 'frontdesk') && (
+          {(isAdmin || role === 'frontdesk') && (
             <NavLink
               to="/admin/dashboard/front-desk"
               className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
@@ -95,7 +97,7 @@ export default function AdminLayout() {
           )}
 
           {/* Event Manager & Admin */}
-          {(role === 'admin' || role === 'eventmanager') && (
+          {(isAdmin || role === 'eventmanager') && (
             <NavLink
               to="/admin/dashboard/events"
               className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
@@ -117,7 +119,7 @@ export default function AdminLayout() {
           </NavLink>
 
           {/* Room Management — Admin and Front Desk */}
-          {(role === 'admin' || role === 'frontdesk') && (
+          {(isAdmin || role === 'frontdesk') && (
             <NavLink
               to="/admin/dashboard/rooms"
               className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
@@ -128,8 +130,8 @@ export default function AdminLayout() {
             </NavLink>
           )}
 
-          {/* User Management — Admin only */}
-          {role === 'admin' && (
+          {/* User Management — Main Admin & Sub Admin */}
+          {isAdmin && (
             <>
               <div className="nav-section-label" style={{ marginTop: '1rem' }}>System Admin</div>
               <NavLink

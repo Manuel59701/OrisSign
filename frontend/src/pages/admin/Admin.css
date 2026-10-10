@@ -343,6 +343,14 @@
   margin-top: 4px;
 }
 
+.stat-pending {
+  display: block;
+  font-size: 0.72rem;
+  color: #d97706;
+  margin-top: 2px;
+  font-weight: 500;
+}
+
 .stat-icon-wrapper {
   width: 52px;
   height: 52px;
@@ -477,6 +485,13 @@
   color: #0a0a0a;
   margin-top: 4px;
   text-align: center;
+}
+
+.payment-cell .mark-paid-btn {
+  margin: 6px auto 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* Pagination */
@@ -1304,6 +1319,41 @@
   background: #fafafa;
 }
 
+/* Payment confirmation modal */
+.payment-confirm-modal {
+  max-width: 420px;
+  width: calc(100% - 2rem);
+}
+
+.payment-confirm-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.payment-confirm-icon svg {
+  color: var(--color-accent-dark);
+}
+
+.payment-confirm-text {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #1f2937;
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+
+.payment-confirm-warning {
+  font-size: 0.82rem;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  text-align: center;
+  line-height: 1.45;
+}
+
 /* ---------------- Form Elements in Admin ---------------- */
 .form-grid-2 {
   display: grid;
@@ -1345,6 +1395,35 @@
   outline: none;
   border-color: var(--color-black);
   box-shadow: 0 0 0 3px rgba(10, 10, 10, 0.08);
+}
+
+.password-input-wrap {
+  position: relative;
+}
+
+.password-input-wrap input {
+  width: 100%;
+  padding-right: 2.9rem;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+.password-toggle-btn:hover {
+  color: #111827;
 }
 
 .checkbox-row {

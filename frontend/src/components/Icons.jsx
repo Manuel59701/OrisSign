@@ -233,6 +233,18 @@ export const X = make(<>
   <path d="M18 6 6 18M6 6l12 12" />
 </>);
 
+export const Trash = make(<>
+  <path d="M3 6h18" />
+  <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
+  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+  <path d="M10 11v6M14 11v6" />
+</>);
+
+export const Settings = make(<>
+  <circle cx="12" cy="12" r="3" />
+  <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.09a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z" />
+</>);
+
 const amenityMatchers = [
   [/wifi|wi-fi|internet/, Wifi],
   [/air condition|\bac\b|climate/, Snowflake],
@@ -267,10 +279,22 @@ export function AmenityIcon({ name, size = 15, className }) {
   return <Cmp width={size} height={size} className={className} style={{ verticalAlign: '-2px' }} />;
 }
 
+export const Eye = make(<>
+  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
+  <circle cx="12" cy="12" r="3" />
+</>);
+
+export const EyeOff = make(<>
+  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+  <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+  <path d="M1 1l22 22" />
+</>);
+
 export default {
   Grid, Bell, ConciergeBell, Calendar, Receipt, Bed, Users, Globe, LogOut, Menu,
   Shield, Search, Clipboard, Check, CheckCircle, Download, Mail, Phone, MapPin,
   Clock, Money, Sparkles, Star, Wifi, Snowflake, Tv, Fridge, Wine, Sun, Bath,
   Sofa, Utensils, Mic, Music, Video, Presentation, Umbrella, Flame, Lightbulb,
-  Car, Sprout, Key, X,
+  Car, Sprout, Key, X, Trash, Settings, Eye, EyeOff,
 };

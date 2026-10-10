@@ -3,7 +3,8 @@ import api from '../../utils/api';
 import { formatCurrency, formatDate, getToday, getTomorrow, calculateNights } from '../../utils/helpers';
 import { downloadReceipt } from '../../utils/receipt';
 import { useToast } from '../../context/ToastContext';
-import { Bell, Clipboard, Search, Check, CheckCircle, Download } from '../../components/Icons';
+import { Bell, Clipboard, Search, Check, CheckCircle, Download, Trash } from '../../components/Icons';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import './Admin.css';
 
 export default function FrontDesk() {
@@ -38,6 +39,10 @@ export default function FrontDesk() {
   const [receiptSearchTerm, setReceiptSearchTerm] = useState('');
   const [receiptSearchResults, setReceiptSearchResults] = useState([]);
   const [searchingReceipts, setSearchingReceipts] = useState(false);
+
+  // Payment confirmation modal state
+  const [paymentConfirmBooking, setPaymentConfirmBooking] = useState(null);
+  const [deleteConfirmBooking, setDeleteConfirmBooking] = useState(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -90,6 +95,39 @@ export default function FrontDesk() {
       loadData();
     } catch (err) {
       showToast(err.error || 'Failed to check out guest', 'error');
+    }
+  };
+
+  // Handle Front Desk confirming a payment
+  const openPaymentConfirm = (b) => setPaymentConfirmBooking({ ...b });
+
+  const confirmMarkPaid = async () => {
+    if (!paymentConfirmBooking) return;
+    const b = paymentConfirmBooking;
+    setPaymentConfirmBooking(null);
+    try {
+      await api.markPaid(b.id, 'paid');
+      showToast(`Payment confirmed for ${b.guest_name}.`, 'success');
+      loadData();
+    } catch (err) {
+      showToast(err.error || 'Failed to update payment status', 'error');
+    }
+  };
+
+  // Handle deleting a booking (opens confirm dialog)
+  const openDeleteConfirm = (b) => setDeleteConfirmBooking({ ...b });
+
+  const confirmDeleteBooking = async () => {
+    if (!deleteConfirmBooking) return;
+    const b = deleteConfirmBooking;
+    setDeleteConfirmBooking(null);
+    try {
+      await api.deleteBooking(b.id);
+      try { localStorage.removeItem(`oris_receipt_${b.receipt_id}`); } catch { /* ignore */ }
+      showToast('Reservation deleted.', 'success');
+      loadData();
+    } catch (err) {
+      showToast(err.error || 'Failed to delete reservation', 'error');
     }
   };
 
@@ -327,16 +365,25 @@ export default function FrontDesk() {
                           {b.booking_type || 'online'}
                         </span>
                       </td>
-                      <td className="payment-cell">
-                        <div className="payment-status-row">
-                          <span className="badge badge-paid">
-                            {b.payment_status || 'paid'} [{(b.payment_method || 'card')}]
-                          </span>
-                        </div>
-                        <div className="payment-amount">
-                          {formatCurrency(b.total_amount)}
-                        </div>
-                      </td>
+<td className="payment-cell">
+        <div className="payment-status-row">
+          <span className={`badge badge-${b.payment_status || 'pending'}`}>
+            {b.payment_status || 'pending'} [{(b.payment_method || 'card')}]
+          </span>
+        </div>
+        <div className="payment-amount">
+          {formatCurrency(b.total_amount)}
+        </div>
+        {b.payment_status !== 'paid' && (
+          <button
+            className="btn-admin btn-admin-success btn-admin-sm mark-paid-btn"
+            onClick={() => openPaymentConfirm(b)}
+            title="Confirm this guest's payment"
+          >
+            Mark Paid
+          </button>
+        )}
+      </td>
                       <td>
                         <span className={`badge badge-${status.replace(/_/g, '-')}`}>
                           {status === 'checked_in' ? <><Check width="12" height="12" /> Checked In</> : status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
@@ -376,6 +423,14 @@ export default function FrontDesk() {
                             title="Download Official Receipt PDF"
                           >
                             <Download width="15" height="15" />
+                          </button>
+
+                          <button
+                            className="btn-admin btn-admin-danger btn-admin-sm btn-icon-only"
+                            onClick={() => openDeleteConfirm(b)}
+                            title="Delete this reservation"
+                          >
+                            <Trash width="15" height="15" />
                           </button>
                         </div>
                       </td>
@@ -756,6 +811,41 @@ export default function FrontDesk() {
           )}
         </div>
       )}
+
+      {/* Payment confirmation modal */}
+      <ConfirmDialog
+        open={!!paymentConfirmBooking}
+        title="Confirm Payment Received"
+        variant="success"
+        icon={<CheckCircle width="40" height="40" />}
+        message={paymentConfirmBooking ? (
+          <>
+            Have you confirmed you have received this payment from{' '}
+            <strong>{paymentConfirmBooking.guest_name}</strong>{' '}
+            ({formatCurrency(paymentConfirmBooking.total_amount)})?
+          </>
+        ) : null}
+        confirmLabel="Continue"
+        onClose={() => setPaymentConfirmBooking(null)}
+        onConfirm={confirmMarkPaid}
+      />
+
+      {/* Delete reservation confirmation modal */}
+      <ConfirmDialog
+        open={!!deleteConfirmBooking}
+        title="Delete Reservation"
+        variant="danger"
+        icon={<Trash width="40" height="40" />}
+        message={deleteConfirmBooking ? (
+          <>
+            Delete the reservation for <strong>{deleteConfirmBooking.guest_name}</strong>{' '}
+            {deleteConfirmBooking.receipt_id ? `(${deleteConfirmBooking.receipt_id})` : ''}?
+          </>
+        ) : null}
+        confirmLabel="Delete"
+        onClose={() => setDeleteConfirmBooking(null)}
+        onConfirm={confirmDeleteBooking}
+      />
     </div>
   );
 }

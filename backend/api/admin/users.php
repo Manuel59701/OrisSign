@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 /**
  * Admin Users Management Endpoint
- * GET  /api/admin/users       — List all staff users
- * POST /api/admin/users       — Create new staff user
- * PUT  /api/admin/users/{id}  — Update staff user
- * DELETE /api/admin/users/{id} — Deactivate staff user
+ * GET  /api/admin/users       â€” List all staff users
+ * POST /api/admin/users       â€” Create new staff user
+ * PUT  /api/admin/users/{id}  â€” Update staff user
+ * DELETE /api/admin/users/{id} â€” Deactivate staff user
  * Requires: admin role
  */
 
@@ -16,7 +16,7 @@ $conn = $db->getConnection();
 $method = $_SERVER['REQUEST_METHOD'];
 $id = $_GET['id'] ?? null;
 
-Auth::requireAuth(['admin']);
+Auth::requireAuth(['admin', 'subadmin']);
 
 switch ($method) {
     case 'GET':

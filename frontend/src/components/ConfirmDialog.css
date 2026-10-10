@@ -1,0 +1,23 @@
+.confirm-dialog {
+  max-width: 420px;
+  width: calc(100% - 2rem);
+}
+
+.confirm-dialog-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.confirm-dialog-icon svg {
+  height: 40px;
+  width: 40px;
+}
+
+.confirm-dialog-icon.variant-success svg {
+  color: var(--color-accent-dark);
+}
+
+.confirm-dialog-icon.variant-danger svg {
+  color: #b91c1c;
+}

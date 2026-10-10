@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 /**
  * Event Spaces Endpoint
- * GET  /api/events/spaces          — List all event spaces (public)
- * GET  /api/events/spaces/{id}     — Get single space (public)
- * POST /api/events/spaces          — Create space (admin only)
- * PUT  /api/events/spaces/{id}     — Update space (admin/eventmanager)
+ * GET  /api/events/spaces          â€” List all event spaces (public)
+ * GET  /api/events/spaces/{id}     â€” Get single space (public)
+ * POST /api/events/spaces          â€” Create space (admin only)
+ * PUT  /api/events/spaces/{id}     â€” Update space (admin/eventmanager)
  */
 
 require_once __DIR__ . '/../../config/database.php';
@@ -43,7 +43,7 @@ switch ($method) {
         break;
 
     case 'POST':
-        Auth::requireAuth(['admin']);
+        Auth::requireAuth(['admin', 'subadmin']);
         $data = json_decode(file_get_contents("php://input"), true);
 
         $stmt = $conn->prepare("INSERT INTO event_spaces (name, description, capacity, price_per_day, amenities, image_url) VALUES (:name, :description, :capacity, :price, :amenities, :image_url)");
@@ -61,7 +61,7 @@ switch ($method) {
         break;
 
     case 'PUT':
-        Auth::requireAuth(['admin', 'eventmanager']);
+        Auth::requireAuth(['admin', 'subadmin', 'eventmanager']);
         if (!$id) {
             http_response_code(400);
             echo json_encode(['error' => 'Space ID required']);

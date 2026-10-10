@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Walk-in Booking Endpoint
  * POST /api/bookings/walkin
@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$authUser = Auth::requireAuth(['admin', 'frontdesk']);
+$authUser = Auth::requireAuth(['admin', 'subadmin', 'frontdesk']);
 $data = json_decode(file_get_contents("php://input"), true);
 
 // Validate required fields

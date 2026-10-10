@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Check-in Endpoint
  * PUT /api/bookings/checkin
@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'PUT') {
     exit;
 }
 
-$authUser = Auth::requireAuth(['admin', 'frontdesk']);
+$authUser = Auth::requireAuth(['admin', 'subadmin', 'frontdesk']);
 $data = json_decode(file_get_contents("php://input"), true);
 
 if (empty($data['booking_id'])) {

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Receipt Search Endpoint
  * GET /api/receipts/search?q=ORS-XXXXXX
@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-Auth::requireAuth(['admin', 'frontdesk', 'eventmanager']);
+Auth::requireAuth(['admin', 'subadmin', 'frontdesk', 'eventmanager']);
 
 $query = $_GET['q'] ?? '';
 
