@@ -368,7 +368,7 @@ export default function FrontDesk() {
 <td className="payment-cell">
         <div className="payment-status-row">
           <span className={`badge badge-${b.payment_status || 'pending'}`}>
-            {b.payment_status || 'pending'} [{(b.payment_method || 'card')}]
+            {b.payment_status || 'pending'} ({(b.payment_method || 'online')})
           </span>
         </div>
         <div className="payment-amount">
